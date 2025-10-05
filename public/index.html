@@ -1,0 +1,168 @@
+<!DOCTYPE html><<<<<<< HEAD
+
+<html lang="en"><!DOCTYPE html><!doctype html>
+
+<head>
+
+  <meta charset="UTF-8"><html><html>
+
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+  <title>MahiLLM Chat</title><head>  <head>
+
+  <link rel="stylesheet" href="styles.css">
+
+</head>  <meta charset="utf-8">    <meta charset="utf-8">
+
+<body>
+
+  <div class="app">  <meta name="viewport" content="width=device-width, initial-scale=1">    <meta name="viewport" content="width=device-width,initial-scale=1">
+
+    <aside class="sidebar">
+
+      <button class="new-chat">  <title>MahiLLM Chat</title>    <title>MahiLLM</title>
+
+        <svg width="24" height="24" viewBox="0 0 24 24" fill="none">
+
+          <path d="M12 4L12 20M20 12L4 12" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>  <link rel="stylesheet" href="styles.css">    <link rel="stylesheet" href="styles.css">
+
+        </svg>
+
+        New chat</head>  </head>
+
+      </button>
+
+      <ul id="chat-history" class="chat-history"></ul><body>  <body>
+
+    </aside>
+
+    <main class="chat-container">  <div class="app">    <div class="app">
+
+      <header class="chat-header">MahiLLM Chat</header>
+
+      <div class="chat-messages" id="messages"></div>    <aside class="sidebar">      <header>
+
+      <div class="input-area">
+
+        <form id="form" class="input-form">      <button class="new-chat">        <h1>MahiLLM</h1>
+
+          <textarea id="input" placeholder="Send a message..." rows="1" autofocus></textarea>
+
+          <button type="submit" class="send-button">        <svg width="24" height="24" viewBox="0 0 24 24" fill="none">        <p>Chat with AI models</p>
+
+            <svg width="24" height="24" viewBox="0 0 24 24" fill="none">
+
+              <path d="M7 11L12 6L17 11M12 18V7" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>          <path d="M12 4L12 20M20 12L4 12" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>      </header>
+
+            </svg>
+
+          </button>        </svg>
+
+        </form>
+
+      </div>        New chat      <main>
+
+    </main>
+
+  </div>      </button>        <section id="models" class="models">
+
+  <script src="app.js"></script>
+
+</body>      <div class="chats">          <!-- model cards injected here -->
+
+</html>
+        <ul class="chat-history" id="chat-history">        </section>
+
+          <!-- Chat history items will be inserted here -->      </main>
+
+        </ul>    </div>
+
+      </div>
+
+    </aside>    <script>
+
+      async function load() {
+
+    <main class="chat-container">        const res = await fetch('/api/models');
+
+      <header class="chat-header">        const data = await res.json();
+
+        MahiLLM Chat        const container = document.getElementById('models');
+
+      </header>        data.models.forEach(m => {
+
+          const card = document.createElement('div');
+
+      <div class="chat-messages" id="messages">          card.className = 'model-card';
+
+        <!-- Messages will be inserted here -->          card.innerHTML = `<h4>${m.name}</h4><p>${m.description}</p><div class=\"model-actions\"><a class=\"btn\" href=\"chat.html?model=${encodeURIComponent(m.id)}\">Chat</a><a class=\"ghost\" href=\"#\">Docs</a></div>`;
+
+      </div>          container.appendChild(card);
+
+        });
+
+      <div class="input-area">      }
+
+        <form id="form" class="input-form">      load().catch(err=>console.error(err));
+
+          <textarea     </script>
+
+            id="input"   </body>
+
+            placeholder="Send a message..." </html>
+
+            rows="1"
+            autofocus
+          ></textarea>
+          <button type="submit">
+            <svg width="24" height="24" viewBox="0 0 24 24" fill="none">
+              <path d="M7 11L12 6L17 11M12 18V7" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+            </svg>
+          </button>
+        </form>
+      </div>
+    </main>
+  </div>
+  <script src="app.js"></script>
+</body>
+</html>
+=======
+<!doctype html>
+<html>
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width,initial-scale=1">
+    <title>MahiLLM</title>
+    <link rel="stylesheet" href="styles.css">
+  </head>
+  <body>
+    <div class="app">
+      <header>
+        <h1>MahiLLM</h1>
+        <p>Chat with AI models</p>
+      </header>
+
+      <main>
+        <section id="models" class="models">
+          <!-- model cards injected here -->
+        </section>
+      </main>
+    </div>
+
+    <script>
+      async function load() {
+        const res = await fetch('/api/models');
+        const data = await res.json();
+        const container = document.getElementById('models');
+        data.models.forEach(m => {
+          const card = document.createElement('div');
+          card.className = 'model-card';
+          card.innerHTML = `<h4>${m.name}</h4><p>${m.description}</p><div class=\"model-actions\"><a class=\"btn\" href=\"chat.html?model=${encodeURIComponent(m.id)}\">Chat</a><a class=\"ghost\" href=\"#\">Docs</a></div>`;
+          container.appendChild(card);
+        });
+      }
+      load().catch(err=>console.error(err));
+    </script>
+  </body>
+</html>
+>>>>>>> 22f0f8de8a25ed1a4f77cd9c9272ec027e215b54
