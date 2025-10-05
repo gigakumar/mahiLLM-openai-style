@@ -1,0 +1,25 @@
+# Empty repo<<<<<<< HEAD
+# Node.js dependenciesnode_modules/
+
+node_modules/.env
+
+
+# Environment variables
+.env
+
+# OS files
+.DS_Store
+
+# Logs
+*.log
+npm-debug.log*
+
+# IDE specific files
+.idea/
+.vscode/
+*.swp
+*.swo
+=======
+node_modules/
+.env
+>>>>>>> 22f0f8de8a25ed1a4f77cd9c9272ec027e215b54
