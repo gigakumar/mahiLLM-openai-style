@@ -1,72 +1,7 @@
-{<<<<<<< HEAD
-
-  "name": "mahillm-chat",{{{
-
-  "version": "1.0.0",
-
-  "description": "OpenAI-style chat website",  "name": "mahillm",
-
-  "main": "server.js",
-
-  "scripts": {  "version": "1.0.0",  "name": "mahillm",  "name": "mahillm",
-
-    "start": "node server.js",
-
-    "dev": "nodemon server.js"  "description": "An OpenAI-style chat interface",
-
-  },
-
-  "dependencies": {  "main": "server.js",  "version": "1.0.0",  "version": "1.0.0",
-
-    "express": "^4.18.2",
-
-    "cors": "^2.8.5"  "scripts": {
-
-  },
-
-  "devDependencies": {    "start": "node server.js",  "description": "An OpenAI-style chat interface",  "description": "Simple chat interface demo",
-
-    "nodemon": "^3.0.1"
-
-  }    "dev": "nodemon server.js"
-
-}
-  },  "main": "server.js",  "main": "server.js",
-
-  "dependencies": {
-
-    "express": "^4.18.2",  "scripts": {  "scripts": {
-
-    "cors": "^2.8.5"
-
-  },    "start": "node server.js",    "start": "node server.js"
-
-  "devDependencies": {
-
-    "nodemon": "^3.0.1"    "dev": "nodemon server.js"  },
-
-  }
-
-}  },  "dependencies": {
-
-  "dependencies": {    "express": "^4.18.2",
-
-    "express": "^4.18.2",    "cors": "^2.8.5"
-
-    "cors": "^2.8.5"  },
-
-  },  "license": "MIT"
-
-  "devDependencies": {}
-
-    "nodemon": "^3.0.1"
-  }
-}
-=======
 {
   "name": "mahillm",
   "version": "1.0.0",
-  "description": "Simple chat interface demo",
+  "description": "OpenAI-style chat website",
   "main": "server.js",
   "scripts": {
     "start": "node server.js"
@@ -77,4 +12,3 @@
   },
   "license": "MIT"
 }
->>>>>>> 22f0f8de8a25ed1a4f77cd9c9272ec027e215b54
