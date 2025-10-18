@@ -3,37 +3,305 @@
   <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
-    <title>MahiLLM Chat</title>
-    <link rel="preconnect" href="https://fonts.googleapis.com">
-    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
+    <title>MahiLLM • Fine-tuned Intelligence Platform</title>
+    <meta
+      name="description"
+      content="Deploy, orchestrate, and run your own fine-tuned language models with MahiLLM—an OpenAI-quality experience for your teams."
+    />
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap"
+      rel="stylesheet"
+    />
     <link rel="stylesheet" href="/styles.css" />
   </head>
   <body>
-    <div class="app">
-      <aside class="sidebar">
-        <div class="brand">MahiLLM</div>
-        <button id="new-chat" class="primary">+ New chat</button>
-        <div class="history" id="history"></div>
-        <div class="footer">Built with ❤️</div>
-      </aside>
-      <main class="chat">
-        <header class="chat-header">
-          <div class="title">Chat</div>
-          <div class="status" id="status">Ready</div>
-        </header>
-        <section id="messages" class="messages" aria-live="polite"></section>
-        <footer class="composer">
-          <form id="form">
-            <textarea id="input" rows="1" placeholder="Message MahiLLM..." autocomplete="off"></textarea>
-            <button id="send" class="send" aria-label="Send" title="Send">➤</button>
-          </form>
-          <div class="hint">MahiLLM may make mistakes. Consider checking important info.</div>
-        </footer>
-      </main>
-    </div>
-  <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
+    <header class="site-header">
+      <div class="nav-shell container">
+        <a href="#home" class="logo">MahiLLM</a>
+        <nav class="nav-links">
+          <a href="#platform">Platform</a>
+          <a href="#models">Models</a>
+          <a href="#solutions">Solutions</a>
+          <a href="#pricing">Pricing</a>
+          <a href="#safety">Safety</a>
+        </nav>
+        <div class="nav-actions">
+          <a href="#chat" class="btn ghost">Console</a>
+          <a href="mailto:hello@mahillm.ai" class="btn primary">Talk to us</a>
+        </div>
+      </div>
+    </header>
+
+    <main>
+      <section class="hero" id="home">
+        <div class="container hero-grid">
+          <div class="hero-copy">
+            <p class="eyebrow">Fine-tuned intelligence for teams that ship</p>
+            <h1>OpenAI-level experiences, powered by your models.</h1>
+            <p class="lead">
+              MahiLLM lets you host, refine, and deploy your own large language models with the polish of ChatGPT. Bring enterprise guardrails, realtime streaming, and beautiful UX to every workflow.
+            </p>
+            <div class="cta-group">
+              <a class="btn primary" href="#chat">Launch the console</a>
+              <a class="btn ghost" href="#models">Explore model roster</a>
+            </div>
+            <dl class="hero-metrics">
+              <div>
+                <dt>Latency</dt>
+                <dd><strong>~220ms</strong><span> avg token</span></dd>
+              </div>
+              <div>
+                <dt>Deployments</dt>
+                <dd><strong>120+</strong><span> enterprise stacks</span></dd>
+              </div>
+              <div>
+                <dt>Regions</dt>
+                <dd><strong>5</strong><span> global POPs</span></dd>
+              </div>
+            </dl>
+          </div>
+          <div class="hero-card">
+            <h2>Launch in minutes</h2>
+            <p>
+              Upload checkpoints, set safety envelopes, and provision streaming endpoints without touching infrastructure.
+            </p>
+            <ul>
+              <li>Managed fine-tune lifecycle</li>
+              <li>Realtime streaming APIs</li>
+              <li>Granular analytics & guardrails</li>
+            </ul>
+            <a href="#platform" class="inline-link">See how the platform works →</a>
+          </div>
+        </div>
+      </section>
+
+      <section class="section" id="platform">
+        <div class="container">
+          <div class="section-head">
+            <h2>The MahiLLM platform</h2>
+            <p>Everything you need to train, evaluate, and deploy bespoke models with the confidence of a production-grade stack.</p>
+          </div>
+          <div class="feature-grid">
+            <article class="card">
+              <h3>Orchestrate</h3>
+              <p>Ship multi-model workflows with routing, fallbacks, and A/B testing baked in.</p>
+              <ul>
+                <li>Deterministic evaluation harness</li>
+                <li>Experiment tracking & rollback</li>
+                <li>Usage controls per workspace</li>
+              </ul>
+            </article>
+            <article class="card">
+              <h3>Secure</h3>
+              <p>Keep IP safe with private networking, SOC 2 compliance, and data residency options.</p>
+              <ul>
+                <li>Zero-retention inference</li>
+                <li>Encryption in transit & at rest</li>
+                <li>Adaptive trust & safety filters</li>
+              </ul>
+            </article>
+            <article class="card">
+              <h3>Scale</h3>
+              <p>Autoscale GPU clusters across regions with intelligent batching and cost controls.</p>
+              <ul>
+                <li>Usage forecasting dashboards</li>
+                <li>Reserved capacity pools</li>
+                <li>SLA-backed support</li>
+              </ul>
+            </article>
+          </div>
+        </div>
+      </section>
+
+      <section class="section surface" id="models">
+        <div class="container">
+          <div class="section-head">
+            <h2>Model roster</h2>
+            <p>Pick from our tuned baselines or bring your own checkpoint. Mix and match architectures to fit each job.</p>
+          </div>
+          <div class="model-table">
+            <div class="model-row">
+              <div>
+                <h3>MahiLLM-Instruct</h3>
+                <p>Flagship conversational model tuned for fast, high-quality assistance.</p>
+              </div>
+              <span class="badge">65B</span>
+              <span class="badge secondary">Streaming</span>
+              <a href="#chat" class="inline-link">Try now →</a>
+            </div>
+            <div class="model-row">
+              <div>
+                <h3>MahiLLM-Code</h3>
+                <p>Optimized for completions, code reviews, and pair programming.</p>
+              </div>
+              <span class="badge">34B</span>
+              <span class="badge secondary">JSON mode</span>
+              <a href="#chat" class="inline-link">View API →</a>
+            </div>
+            <div class="model-row">
+              <div>
+                <h3>MahiLLM-Insight</h3>
+                <p>Grounded retrieval with document connectors and chain-of-thought traces.</p>
+              </div>
+              <span class="badge">22B</span>
+              <span class="badge secondary">RAG ready</span>
+              <a href="#solutions" class="inline-link">See use cases →</a>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <section class="section" id="solutions">
+        <div class="container">
+          <div class="section-head">
+            <h2>Solutions for every team</h2>
+            <p>From customer support to quantitative research, MahiLLM adapts to the rigor your business demands.</p>
+          </div>
+          <div class="solution-grid">
+            <article class="card compact">
+              <h3>Support copilots</h3>
+              <p>Resolve tickets in seconds with guardrailed, multi-turn assistants tuned on your voice.</p>
+            </article>
+            <article class="card compact">
+              <h3>Research fabric</h3>
+              <p>Query private knowledge bases with retrieval-augmented prompts and explainable reasoning.</p>
+            </article>
+            <article class="card compact">
+              <h3>Product automation</h3>
+              <p>Automate content, classification, and workflow orchestration with reliable tool use.</p>
+            </article>
+            <article class="card compact">
+              <h3>Developer velocity</h3>
+              <p>Integrate with one SDK that spans chat, batch, and structured generation.</p>
+            </article>
+          </div>
+        </div>
+      </section>
+
+      <section class="section surface" id="pricing">
+        <div class="container">
+          <div class="section-head">
+            <h2>Transparent pricing</h2>
+            <p>Usage-based billing with guardrails so you never lose track of spend.</p>
+          </div>
+          <div class="pricing-grid">
+            <article class="price-card">
+              <h3>Build</h3>
+              <p class="price">$0<span>/month</span></p>
+              <ul>
+                <li>10K free tokens daily</li>
+                <li>Shared GPU tier</li>
+                <li>Email support</li>
+              </ul>
+              <a href="#chat" class="btn ghost">Start free</a>
+            </article>
+            <article class="price-card highlight">
+              <h3>Scale</h3>
+              <p class="price">$499<span>/month</span></p>
+              <ul>
+                <li>Priority GPU pools</li>
+                <li>Fine-tune orchestration</li>
+                <li>Dedicated success engineer</li>
+              </ul>
+              <a href="mailto:sales@mahillm.ai" class="btn primary">Book a call</a>
+            </article>
+            <article class="price-card">
+              <h3>Enterprise</h3>
+              <p class="price">Custom</p>
+              <ul>
+                <li>Private cloud or on-prem</li>
+                <li>SOC 2 Type II & HIPAA</li>
+                <li>24/7 white-glove support</li>
+              </ul>
+              <a href="mailto:sales@mahillm.ai" class="btn ghost">Contact sales</a>
+            </article>
+          </div>
+        </div>
+      </section>
+
+      <section class="section" id="safety">
+        <div class="container">
+          <div class="section-head">
+            <h2>Responsible by design</h2>
+            <p>Safety engineering is woven into every deployment. Audit, explain, and govern your models with confidence.</p>
+          </div>
+          <div class="safety-grid">
+            <article>
+              <h3>Policy guardrails</h3>
+              <p>Enforce your own policy stacks with configurable content filters and real-time alerts.</p>
+            </article>
+            <article>
+              <h3>Observability suite</h3>
+              <p>Latency, drift, and quality dashboards to keep production models accountable.</p>
+            </article>
+            <article>
+              <h3>Human loop</h3>
+              <p>Escalate edge cases to expert reviewers and retrain with curated feedback.</p>
+            </article>
+          </div>
+        </div>
+      </section>
+
+      <section class="section surface" id="chat">
+        <div class="container">
+          <div class="section-head">
+            <h2>Experience the console</h2>
+            <p>Try a live conversation with our flagship assistant. Streaming, markdown, and code execution—exactly how your users will see it.</p>
+          </div>
+          <div class="chat-preview">
+            <div class="chat-app">
+              <aside class="sidebar">
+                <div class="brand">MahiLLM</div>
+                <button id="new-chat" class="primary">+ New chat</button>
+                <div class="history" id="history"></div>
+                <div class="footer">Built with ❤️</div>
+              </aside>
+              <main class="chat">
+                <header class="chat-header">
+                  <div class="title">Chat</div>
+                  <div class="status" id="status">Ready</div>
+                </header>
+                <section id="messages" class="messages" aria-live="polite"></section>
+                <footer class="composer">
+                  <form id="form">
+                    <textarea id="input" rows="1" placeholder="Message MahiLLM..." autocomplete="off"></textarea>
+                    <button id="send" class="send" aria-label="Send" title="Send">➤</button>
+                  </form>
+                  <div class="hint">MahiLLM may make mistakes. Consider checking important info.</div>
+                </footer>
+              </main>
+            </div>
+          </div>
+        </div>
+      </section>
+    </main>
+
+    <footer class="site-footer">
+      <div class="container footer-grid">
+        <div>
+          <div class="logo">MahiLLM</div>
+          <p>Fine-tuned intelligence, delivered with the polish of OpenAI.</p>
+        </div>
+        <div class="footer-links">
+          <a href="#platform">Platform</a>
+          <a href="#models">Models</a>
+          <a href="#solutions">Solutions</a>
+          <a href="#pricing">Pricing</a>
+          <a href="#safety">Safety</a>
+        </div>
+        <div class="footer-meta">
+          <p>© <span id="year"></span> MahiLLM Labs. All rights reserved.</p>
+        </div>
+      </div>
+    </footer>
+
+    <script>
+      document.getElementById('year').textContent = new Date().getFullYear();
+    </script>
+    <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
     <script src="/app.js" type="module"></script>
   </body>
-  </html>
+</html>
 
