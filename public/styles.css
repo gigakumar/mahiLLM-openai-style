@@ -117,6 +117,8 @@ section {
   letter-spacing: 0.06em;
   text-transform: uppercase;
 }
+.logo img.logo-img { height: 28px; width: auto; display: block; border-radius: 6px; border: 1px solid var(--border); background: rgba(0,0,0,0.18); padding: 3px; }
+.theme-light .logo img.logo-img { background: #ffffff; }
 
 .nav-links {
   display: flex;

@@ -316,4 +316,5 @@ function swapThemeImages(theme) {
   };
   apply(img('hero-banner'));
   apply(img('hero-mark'));
+  apply(img('nav-logo'));
 }
