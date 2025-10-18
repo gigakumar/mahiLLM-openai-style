@@ -14,7 +14,26 @@ app.use(express.json());
 
 const __dirnameResolved = path.resolve();
 const publicDir = path.join(__dirnameResolved, 'public');
+
+// Views: EJS templates for pages
+app.set('views', path.join(__dirnameResolved, 'views'));
+app.set('view engine', 'ejs');
+
+// Static assets
 app.use(express.static(publicDir));
+// Serve favicon from repo root
+app.get('/favicon.svg', (req, res) => {
+  res.sendFile(path.join(__dirnameResolved, 'favicon.svg'));
+});
+
+// Pages
+app.get('/', (req, res) => res.render('index'));
+app.get('/docs', (req, res) => res.render('docs'));
+app.get('/blog', (req, res) => res.render('blog'));
+// Legacy/alias routes to support existing links
+app.get('/docs.html', (req, res) => res.render('docs'));
+app.get('/blog/', (req, res) => res.render('blog'));
+app.get('/blog/index.html', (req, res) => res.render('blog'));
 
 // Utility: simple SSE writer
 function sseWrite(res, data) {
@@ -114,14 +133,9 @@ app.post('/api/chat', async (req, res) => {
   }
 });
 
-// SPA fallback
-app.get('*', (req, res) => {
-  const filePath = path.join(publicDir, 'index.html');
-  if (fs.existsSync(filePath)) {
-    res.sendFile(filePath);
-  } else {
-    res.status(404).send('index.html missing');
-  }
+// Fallback 404 page for unknown routes
+app.use((req, res) => {
+  res.status(404).send('Not Found');
 });
 
 app.listen(PORT, () => {
