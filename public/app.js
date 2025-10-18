@@ -280,28 +280,31 @@ btnClear?.addEventListener('click', () => {
   saveHistory();
 });
 
-// Theme toggle
+// Centralized theme setter
+function setTheme(theme) {
+  const root = document.documentElement;
+  const isLight = theme === 'light';
+  root.classList.toggle('theme-light', isLight);
+  localStorage.setItem('mahi_theme', isLight ? 'light' : 'dark');
+  swapThemeImages(isLight ? 'light' : 'dark');
+}
+
+// Theme toggle buttons
 btnTheme?.addEventListener('click', () => {
-  const root = document.documentElement;
-  const isLight = root.classList.toggle('theme-light');
-  localStorage.setItem('mahi_theme', isLight ? 'light' : 'dark');
-  swapThemeImages(isLight ? 'light' : 'dark');
+  const current = localStorage.getItem('mahi_theme') || (document.documentElement.classList.contains('theme-light') ? 'light' : 'dark');
+  setTheme(current === 'light' ? 'dark' : 'light');
 });
 
-// Top nav theme toggle mirrors the chat toggle
 btnThemeTop?.addEventListener('click', () => {
-  const root = document.documentElement;
-  const isLight = root.classList.toggle('theme-light');
-  localStorage.setItem('mahi_theme', isLight ? 'light' : 'dark');
-  swapThemeImages(isLight ? 'light' : 'dark');
+  const current = localStorage.getItem('mahi_theme') || (document.documentElement.classList.contains('theme-light') ? 'light' : 'dark');
+  setTheme(current === 'light' ? 'dark' : 'light');
 });
 
-// Apply stored theme on load
+// Apply stored theme on load; default to light
 (() => {
-  const t = localStorage.getItem('mahi_theme');
-  const isLight = t === 'light';
-  if (isLight) document.documentElement.classList.add('theme-light');
-  swapThemeImages(isLight ? 'light' : 'dark');
+  const saved = localStorage.getItem('mahi_theme');
+  const initial = saved || 'light';
+  setTheme(initial);
 })();
 
 // Suggestion chips

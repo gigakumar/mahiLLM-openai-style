@@ -29,6 +29,15 @@
   --code-bg: #f5f7fb;
 }
 
+/* Light theme specific surfaces for clarity */
+.theme-light .site-header { background: rgba(255,255,255,0.85); }
+.theme-light .chat-app { background: rgba(255,255,255,0.9); }
+.theme-light .sidebar { background: #fff; }
+.theme-light .chat-header { background: #fff; }
+.theme-light .bubble { background: #fff; border-color: var(--border); }
+.theme-light #input { background: #fff; color: var(--text); }
+.theme-light .cookie-inner { background: #fff; }
+
 * {
   box-sizing: border-box;
 }
