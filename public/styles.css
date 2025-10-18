@@ -773,6 +773,38 @@ canvas#hero-canvas { position: absolute; inset: 0; width: 100%; height: 100%; po
   display: flex; align-items: center; justify-content: space-between; gap: 12px;
 }
 
+/* --- Light theme refinements --- */
+.theme-light body {
+  background: radial-gradient(120% 120% at 80% 0%, rgba(123, 97, 255, 0.10), transparent),
+    radial-gradient(120% 120% at 0% 0%, rgba(16, 163, 127, 0.08), transparent),
+    var(--bg);
+}
+.theme-light .hero { background: radial-gradient(60% 80% at 75% 5%, rgba(123, 97, 255, 0.12), transparent); }
+.theme-light .hero-metrics div { background: #fff; }
+.theme-light .hero-card { background: #fff; border-color: var(--border); box-shadow: 0 16px 40px rgba(2,6,12,0.08); }
+.theme-light .section.surface { background: linear-gradient(180deg, #f9fafc, #f2f5fa); border-block: 1px solid var(--border); }
+.theme-light .card { box-shadow: 0 10px 24px rgba(2,6,12,0.06); }
+.theme-light .model-row { background: #fff; border-color: var(--border); }
+.theme-light .price-card { background: #fff; border-color: var(--border); box-shadow: 0 14px 36px rgba(2,6,12,0.08); }
+.theme-light .safety-grid article { background: #fff; border-color: var(--border); }
+.theme-light .chat-preview { background: linear-gradient(135deg, rgba(123,97,255,0.08), rgba(16,163,127,0.05)); border-color: var(--border); box-shadow: 0 24px 60px rgba(2,6,12,0.08); }
+.theme-light .chat-app { background: #fff; }
+.theme-light .sidebar { background: #fff; }
+.theme-light .sidebar .primary { background: #f6f7fb; }
+.theme-light .history-item:hover { background: #f6f7fb; }
+.theme-light .chat-header { background: #fff; }
+.theme-light .model-select select { background: #fff; color: var(--text); }
+.theme-light .avatar { background: #f0f4f9; }
+.theme-light .bubble { background: #fff; border-color: var(--border); }
+.theme-light .composer { background: linear-gradient(180deg, transparent, rgba(0,0,0,0.03)); }
+.theme-light .chip { background: #fff; }
+.theme-light .badge { background: rgba(123,97,255,0.08); border-color: rgba(123,97,255,0.2); }
+.theme-light .badge.secondary { background: rgba(16,163,127,0.10); border-color: rgba(16,163,127,0.2); }
+.theme-light .site-footer { background: #fff; }
+.theme-light .cookie-inner { background: #fff; }
+.theme-light #input { background: #fff; color: var(--text); }
+.theme-light .system-panel textarea { background: #fff; color: var(--text); }
+
 @media (max-width: 1024px) {
   .hero-grid {
     grid-template-columns: 1fr;
