@@ -12,6 +12,12 @@ const modelSelect = el('#model-select');
 const btnClear = el('#btn-clear');
 const btnTheme = el('#btn-theme');
 const suggestionsEl = el('#suggestions');
+const systemPanel = el('#system-panel');
+const systemTextarea = el('#system-prompt');
+const tempInput = el('#temp');
+const tempVal = el('#temp-val');
+const filesInput = el('#files');
+const fileList = el('#file-list');
 
 const history = [];
 let currentMessages = [];
@@ -97,6 +103,7 @@ async function streamChat(messages) {
   const decoder = new TextDecoder();
 
   let assistantContent = '';
+  const t0 = performance.now();
   const bubble = addRow({ role: 'assistant', content: '' });
 
   // Highlight code blocks as chunks arrive
@@ -118,6 +125,7 @@ async function streamChat(messages) {
         }
         if (json.done) {
           statusEl.textContent = 'Ready';
+          updateAnalytics({ firstTokenMs: performance.now() - t0, deltaTokens: assistantContent.length });
         }
       } catch {}
     }
@@ -132,7 +140,7 @@ async function demoFallback(messages) {
   const last = messages[messages.length - 1]?.content || '';
   const preface = `This is a live demo preview. On a full deployment, responses stream from your hosted models.\n\n`;
   const selected = modelSelect?.value || 'mahillm-instruct';
-  const content = preface + generateDemoAnswer(last, selected);
+  const content = preface + generateDemoAnswer(last, selected, getSystemPrompt(), getTemperature(), getAttachedTexts());
   const bubble = addRow({ role: 'assistant', content: '' });
   let acc = '';
   for (const ch of content) {
@@ -144,24 +152,23 @@ async function demoFallback(messages) {
   }
   statusEl.textContent = 'Ready';
   currentMessages.push({ role: 'assistant', content });
+  updateAnalytics({ firstTokenMs: 180 + Math.random() * 120, deltaTokens: content.length });
   return content;
 }
 
-function generateDemoAnswer(prompt, model) {
+function generateDemoAnswer(prompt, model, system, temperature, attachments) {
   if (!prompt) return 'Ask me anything about MahiLLM, our models, or how to deploy your own assistant.';
-  const samples = [
-    `Here’s how ${model} would approach “${prompt}” in production:\n\n1. Parse your request\n2. Route to the best fine-tuned model\n3. Stream tokens with low latency\n4. Apply safety + formatting\n\nConnect this UI to your endpoint by deploying the Node server and setting MAHI_API_BASE.`,
-    `Quick take on “${prompt}” with ${model}:\n\n- Draft an answer\n- Provide examples\n- Return structured JSON if needed\n\nThis page is running a static demo so you can preview the experience even without a backend.`,
-    `“${prompt}” is a great use case for a fine-tuned assistant. With ${model} you can:\n\n- Upload a checkpoint\n- Add guardrails\n- Stream responses to this UI\n\nSwap the demo with your endpoint to go live.`,
-  ];
-  return samples[Math.floor(Math.random() * samples.length)];
+  const att = attachments && attachments.length ? `\n\nAttached context (${attachments.length} files):\n- ${attachments.map((a) => a.name).join('\n- ')}` : '';
+  const body = `System: ${system || 'You are MahiLLM, a helpful AI assistant.'}\nTemperature: ${temperature.toFixed(1)}\nModel: ${model}${att}\n\nUser: ${prompt}\n\nAssistant:`;
+  const answer = `Based on the provided system prompt and temperature, here is a structured response to your query:\n\n- Key points addressing: "${prompt}"\n- Rationale aligned with system policy\n- If applicable, cite attached files in reasoning\n\nExample JSON:\n\n\`\`\`json\n{ "summary": "...", "actions": ["..."], "confidence": 0.83 }\n\`\`\``;
+  return body + '\n\n' + answer;
 }
 
 // Persist conversation history locally per model
 const HISTORY_KEY = 'mahi_history_v1';
 function saveHistory() {
   try {
-    const payload = { model: modelSelect?.value || 'mahillm-instruct', messages: currentMessages };
+    const payload = { model: modelSelect?.value || 'mahillm-instruct', messages: currentMessages, system: getSystemPrompt(), temp: getTemperature() };
     localStorage.setItem(HISTORY_KEY, JSON.stringify(payload));
   } catch {}
 }
@@ -169,8 +176,10 @@ function loadHistory() {
   try {
     const raw = localStorage.getItem(HISTORY_KEY);
     if (!raw) return;
-    const { model, messages } = JSON.parse(raw);
+    const { model, messages, system, temp } = JSON.parse(raw);
     if (modelSelect) modelSelect.value = model || modelSelect.value;
+    if (typeof temp === 'number' && tempInput) { tempInput.value = String(temp); tempVal.textContent = Number(temp).toFixed(1); }
+    if (systemTextarea && system) systemTextarea.value = system;
     if (Array.isArray(messages)) {
       currentMessages = [];
       messagesEl.innerHTML = '';
@@ -187,6 +196,53 @@ document.addEventListener('visibilitychange', () => {
   if (document.visibilityState === 'hidden') saveHistory();
 });
 loadHistory();
+
+// Temperature control
+function getTemperature() { return Number(tempInput?.value || 1); }
+tempInput?.addEventListener('input', () => { tempVal.textContent = getTemperature().toFixed(1); saveHistory(); });
+
+// System prompt
+function getSystemPrompt() { return systemTextarea?.value?.trim() || 'You are MahiLLM, a helpful AI assistant.'; }
+el('#btn-system')?.addEventListener('click', () => {
+  const presets = {
+    concise: 'You are MahiLLM. Answer concisely with bullet points when helpful.',
+    helpful: 'You are MahiLLM. Be helpful, cite assumptions, and offer next steps.',
+    strict: 'You are MahiLLM. Output valid JSON only; include reason and result keys.',
+  };
+  systemTextarea.value = presets.helpful;
+  systemPanel.open = true;
+  saveHistory();
+});
+
+// Attachments mock: read small text-like files for RAG demo
+let attached = [];
+filesInput?.addEventListener('change', async (e) => {
+  attached = [];
+  fileList.innerHTML = '';
+  const files = Array.from(e.target.files || []).slice(0, 5);
+  for (const f of files) {
+    const text = await f.text();
+    attached.push({ name: f.name, text: text.slice(0, 3000) });
+    const pill = document.createElement('span');
+    pill.className = 'file-pill';
+    pill.textContent = f.name;
+    fileList.appendChild(pill);
+  }
+});
+function getAttachedTexts() { return attached; }
+
+// Analytics (client-only demo)
+const KPIS = { messages: 0, tokens: 0, firstTokenMs: [] };
+function updateAnalytics({ firstTokenMs, deltaTokens }) {
+  KPIS.messages += 1;
+  KPIS.tokens += deltaTokens || 0;
+  if (typeof firstTokenMs === 'number') KPIS.firstTokenMs.push(firstTokenMs);
+  const avg = KPIS.firstTokenMs.length ? Math.round(KPIS.firstTokenMs.reduce((a,b)=>a+b,0)/KPIS.firstTokenMs.length) : '–';
+  const k = (id, val) => { const el = document.getElementById(id); if (el) el.textContent = String(val); };
+  k('kpi-messages', KPIS.messages);
+  k('kpi-tokens', KPIS.tokens);
+  k('kpi-latency', avg === '–' ? '–' : `${avg} ms`);
+}
 
 formEl.addEventListener('submit', async (e) => {
   e.preventDefault();

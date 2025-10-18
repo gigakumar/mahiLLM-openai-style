@@ -36,6 +36,8 @@
           <a href="#solutions">Solutions</a>
           <a href="#pricing">Pricing</a>
           <a href="#safety">Safety</a>
+          <a href="../docs.html">Docs</a>
+          <a href="../blog/">Blog</a>
         </nav>
         <div class="nav-actions">
           <a href="#chat" class="btn ghost">Console</a>
@@ -51,6 +53,8 @@
           <a href="#solutions">Solutions</a>
           <a href="#pricing">Pricing</a>
           <a href="#safety">Safety</a>
+          <a href="../docs.html">Docs</a>
+          <a href="../blog/">Blog</a>
           <a href="#chat">Console</a>
           <a href="https://huggingface.co/MahiLLM" target="_blank" rel="noopener noreferrer">Hugging Face ↗</a>
           <a href="https://x.com/Mahilllm" target="_blank" rel="noopener noreferrer">X (Twitter) ↗</a>
@@ -294,18 +298,32 @@
                       <option value="mahillm-insight">MahiLLM-Insight</option>
                     </select>
                   </div>
+                  <div class="model-tuning">
+                    <label for="temp" class="sr-only">Temperature</label>
+                    <input id="temp" type="range" min="0" max="2" step="0.1" value="1" />
+                    <span id="temp-val" aria-live="polite">1.0</span>
+                    <button class="btn ghost small" id="btn-system" type="button">System preset</button>
+                  </div>
                   <div class="tools">
                     <button class="icon-btn" id="btn-clear" title="Clear chat" aria-label="Clear chat">🧹</button>
                     <button class="icon-btn" id="btn-theme" title="Toggle theme" aria-label="Toggle theme">🌓</button>
                   </div>
                   <div class="status" id="status">Ready</div>
                 </header>
+                <details id="system-panel" class="system-panel">
+                  <summary>System prompt</summary>
+                  <textarea id="system-prompt" rows="4" placeholder="You are MahiLLM, a helpful AI assistant."></textarea>
+                </details>
                 <section id="messages" class="messages" aria-live="polite"></section>
                 <footer class="composer">
                   <form id="form">
                     <textarea id="input" rows="1" placeholder="Message MahiLLM..." autocomplete="off"></textarea>
                     <button id="send" class="send" aria-label="Send" title="Send">➤</button>
                   </form>
+                  <div class="attachments">
+                    <input type="file" id="files" multiple accept=".txt,.md,.csv,.json" />
+                    <div id="file-list" class="file-list" aria-live="polite"></div>
+                  </div>
                   <div class="hint">MahiLLM may make mistakes. Consider checking important info.</div>
                   <div class="suggestions" id="suggestions">
                     <button class="chip" data-suggest="Summarize the latest product update into 3 bullet points.">Summarize an update</button>
@@ -315,6 +333,20 @@
                 </footer>
               </main>
             </div>
+          </div>
+        </div>
+      </section>
+
+      <section class="section surface" id="analytics">
+        <div class="container">
+          <div class="section-head">
+            <h2>Analytics (demo)</h2>
+            <p>Client-side counters to illustrate what your real metrics dashboard might show.</p>
+          </div>
+          <div class="analytics">
+            <div class="metric"><div class="kpi" id="kpi-messages">0</div><div class="kpi-label">Messages</div></div>
+            <div class="metric"><div class="kpi" id="kpi-tokens">0</div><div class="kpi-label">Tokens (approx)</div></div>
+            <div class="metric"><div class="kpi" id="kpi-latency">–</div><div class="kpi-label">Avg first-token latency</div></div>
           </div>
         </div>
       </section>
@@ -340,6 +372,24 @@
             <p>In demo mode, nothing leaves your browser. When connected to your backend, data handling follows your server policies.</p>
           </details>
         </div>
+      </div>
+    </section>
+
+    <section class="section surface" id="contact">
+      <div class="container">
+        <div class="section-head">
+          <h2>Contact us</h2>
+          <p>Reach out for enterprise deployments, pilots, or questions.</p>
+        </div>
+        <form class="contact" action="https://formspree.io/f/your-id-here" method="POST">
+          <div class="row2">
+            <input name="name" placeholder="Your name" required />
+            <input type="email" name="email" placeholder="you@example.com" required />
+          </div>
+          <textarea name="message" rows="4" placeholder="How can we help?" required></textarea>
+          <button class="btn primary" type="submit">Send</button>
+          <p class="muted small">Replace the Formspree endpoint with your own ID to enable submissions.</p>
+        </form>
       </div>
     </section>
 

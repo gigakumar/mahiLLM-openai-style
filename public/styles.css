@@ -124,6 +124,27 @@ section {
   font-size: 14px;
   color: var(--text-soft);
 }
+.system-panel { margin: 12px 20px; }
+.system-panel > summary { cursor: pointer; color: var(--text-soft); margin-bottom: 8px; }
+.system-panel textarea { width: 100%; background: rgba(14,19,29,0.9); color: var(--text); border: 1px solid var(--border); border-radius: 10px; padding: 10px; }
+
+.model-tuning { display: flex; align-items: center; gap: 8px; }
+.model-tuning input[type=range] { accent-color: var(--brand); }
+.model-tuning .small { padding: 6px 10px; border-radius: 10px; }
+
+.attachments { display: grid; gap: 8px; margin-top: 10px; }
+.file-list { display: flex; flex-wrap: wrap; gap: 6px; }
+.file-pill { padding: 4px 8px; border: 1px solid var(--border); border-radius: 999px; color: var(--text-soft); font-size: 12px; }
+
+.analytics { display: grid; grid-template-columns: repeat(auto-fit, minmax(180px, 1fr)); gap: 18px; }
+.kpi { font-size: 28px; font-weight: 700; }
+.kpi-label { color: var(--muted); }
+
+.contact .row2 { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+.contact input, .contact textarea { background: rgba(14,19,29,0.9); color: var(--text); border: 1px solid var(--border); border-radius: 10px; padding: 10px; }
+.contact .muted { color: var(--muted); }
+
+canvas#hero-canvas { position: absolute; inset: 0; width: 100%; height: 100%; pointer-events: none; opacity: 0.35; }
 
 .nav-actions {
   display: flex;

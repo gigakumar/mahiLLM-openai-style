@@ -1,0 +1,42 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>MahiLLM Docs</title>
+  <link rel="stylesheet" href="./public/styles.css" />
+</head>
+<body>
+  <header class="site-header">
+    <div class="nav-shell container">
+      <a href="./" class="logo">MahiLLM</a>
+      <nav class="nav-links">
+        <a href="./#platform">Platform</a>
+        <a href="./#chat">Console</a>
+        <a href="./blog/">Blog</a>
+      </nav>
+    </div>
+  </header>
+  <main class="container" style="padding:48px 0;">
+    <h1>Documentation</h1>
+    <p>Everything you need to connect the console to your backend and deploy.</p>
+    <h2>API</h2>
+    <pre><code>// POST /api/chat
+// { messages: [{ role:"system|user|assistant", content: string }], model?: string, temperature?: number }
+// SSE stream with events: data: { token?: string, done?: boolean }
+</code></pre>
+    <h2>Environment</h2>
+    <ul>
+      <li>MAHI_API_BASE (client): set to your server URL</li>
+      <li>PORT (server)</li>
+      <li>OPENAI_API_KEY, OPENAI_MODEL (server, optional)</li>
+    </ul>
+    <h2>Setup</h2>
+    <ol>
+      <li>Deploy server.js to your host</li>
+      <li>Set window.MAHI_API_BASE in index.html</li>
+      <li>Reload the site and test streaming</li>
+    </ol>
+  </main>
+</body>
+</html>
