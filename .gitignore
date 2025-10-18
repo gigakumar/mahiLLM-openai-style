@@ -8,3 +8,12 @@ npm-debug.log*
 *.swp
 *.swo
 # OS files
+
+# Build artifacts
+dist/
+coverage/
+*.tsbuildinfo
+
+# Local env
+.env.local
+.env.*.local

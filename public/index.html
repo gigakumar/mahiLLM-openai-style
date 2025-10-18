@@ -1,0 +1,39 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>MahiLLM Chat</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="/styles.css" />
+  </head>
+  <body>
+    <div class="app">
+      <aside class="sidebar">
+        <div class="brand">MahiLLM</div>
+        <button id="new-chat" class="primary">+ New chat</button>
+        <div class="history" id="history"></div>
+        <div class="footer">Built with ❤️</div>
+      </aside>
+      <main class="chat">
+        <header class="chat-header">
+          <div class="title">Chat</div>
+          <div class="status" id="status">Ready</div>
+        </header>
+        <section id="messages" class="messages" aria-live="polite"></section>
+        <footer class="composer">
+          <form id="form">
+            <textarea id="input" rows="1" placeholder="Message MahiLLM..." autocomplete="off"></textarea>
+            <button id="send" class="send" aria-label="Send" title="Send">➤</button>
+          </form>
+          <div class="hint">MahiLLM may make mistakes. Consider checking important info.</div>
+        </footer>
+      </main>
+    </div>
+  <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
+    <script src="/app.js" type="module"></script>
+  </body>
+  </html>
+
