@@ -9,6 +9,9 @@ const formEl = el('#form');
 const historyEl = el('#history');
 const newChatBtn = el('#new-chat');
 const modelSelect = el('#model-select');
+const btnClear = el('#btn-clear');
+const btnTheme = el('#btn-theme');
+const suggestionsEl = el('#suggestions');
 
 const history = [];
 let currentMessages = [];
@@ -212,3 +215,32 @@ newChatBtn.addEventListener('click', () => {
 
 // initial focus
 inputEl.focus();
+
+// Clear chat
+btnClear?.addEventListener('click', () => {
+  currentMessages = [];
+  messagesEl.innerHTML = '';
+  saveHistory();
+});
+
+// Theme toggle
+btnTheme?.addEventListener('click', () => {
+  const root = document.documentElement;
+  const isLight = root.classList.toggle('theme-light');
+  localStorage.setItem('mahi_theme', isLight ? 'light' : 'dark');
+});
+
+// Apply stored theme on load
+(() => {
+  const t = localStorage.getItem('mahi_theme');
+  if (t === 'light') document.documentElement.classList.add('theme-light');
+})();
+
+// Suggestion chips
+suggestionsEl?.addEventListener('click', (e) => {
+  const btn = e.target.closest('[data-suggest]');
+  if (!btn) return;
+  inputEl.value = btn.getAttribute('data-suggest');
+  inputEl.dispatchEvent(new Event('input'));
+  inputEl.focus();
+});

@@ -294,6 +294,10 @@
                       <option value="mahillm-insight">MahiLLM-Insight</option>
                     </select>
                   </div>
+                  <div class="tools">
+                    <button class="icon-btn" id="btn-clear" title="Clear chat" aria-label="Clear chat">🧹</button>
+                    <button class="icon-btn" id="btn-theme" title="Toggle theme" aria-label="Toggle theme">🌓</button>
+                  </div>
                   <div class="status" id="status">Ready</div>
                 </header>
                 <section id="messages" class="messages" aria-live="polite"></section>
@@ -303,6 +307,11 @@
                     <button id="send" class="send" aria-label="Send" title="Send">➤</button>
                   </form>
                   <div class="hint">MahiLLM may make mistakes. Consider checking important info.</div>
+                  <div class="suggestions" id="suggestions">
+                    <button class="chip" data-suggest="Summarize the latest product update into 3 bullet points.">Summarize an update</button>
+                    <button class="chip" data-suggest="Draft a polite reply to this customer complaint.">Draft a reply</button>
+                    <button class="chip" data-suggest="Generate 3 taglines for a developer tools company.">Generate taglines</button>
+                  </div>
                 </footer>
               </main>
             </div>
