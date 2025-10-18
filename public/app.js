@@ -11,6 +11,7 @@ const newChatBtn = el('#new-chat');
 const modelSelect = el('#model-select');
 const btnClear = el('#btn-clear');
 const btnTheme = el('#btn-theme');
+const btnThemeTop = el('#btn-theme-top');
 const suggestionsEl = el('#suggestions');
 const systemPanel = el('#system-panel');
 const systemTextarea = el('#system-prompt');
@@ -281,6 +282,14 @@ btnClear?.addEventListener('click', () => {
 
 // Theme toggle
 btnTheme?.addEventListener('click', () => {
+  const root = document.documentElement;
+  const isLight = root.classList.toggle('theme-light');
+  localStorage.setItem('mahi_theme', isLight ? 'light' : 'dark');
+  swapThemeImages(isLight ? 'light' : 'dark');
+});
+
+// Top nav theme toggle mirrors the chat toggle
+btnThemeTop?.addEventListener('click', () => {
   const root = document.documentElement;
   const isLight = root.classList.toggle('theme-light');
   localStorage.setItem('mahi_theme', isLight ? 'light' : 'dark');
