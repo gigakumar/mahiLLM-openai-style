@@ -222,6 +222,9 @@ canvas#hero-canvas { position: absolute; inset: 0; width: 100%; height: 100%; po
   background: radial-gradient(60% 80% at 75% 5%, rgba(123, 97, 255, 0.35), transparent);
 }
 
+.hero-media { position: relative; display: grid; place-items: center; padding: 20px 0 0; }
+.hero-media img { width: min(1100px, 92vw); height: auto; opacity: 0.95; }
+
 .hero-grid {
   display: grid;
   gap: 48px;
