@@ -284,12 +284,15 @@ btnTheme?.addEventListener('click', () => {
   const root = document.documentElement;
   const isLight = root.classList.toggle('theme-light');
   localStorage.setItem('mahi_theme', isLight ? 'light' : 'dark');
+  swapThemeImages(isLight ? 'light' : 'dark');
 });
 
 // Apply stored theme on load
 (() => {
   const t = localStorage.getItem('mahi_theme');
-  if (t === 'light') document.documentElement.classList.add('theme-light');
+  const isLight = t === 'light';
+  if (isLight) document.documentElement.classList.add('theme-light');
+  swapThemeImages(isLight ? 'light' : 'dark');
 })();
 
 // Suggestion chips
@@ -300,3 +303,17 @@ suggestionsEl?.addEventListener('click', (e) => {
   inputEl.dispatchEvent(new Event('input'));
   inputEl.focus();
 });
+
+// Swap theme-aware images (banner and mark) using data-light-src / data-dark-src
+function swapThemeImages(theme) {
+  const img = (id) => document.getElementById(id);
+  const apply = (node) => {
+    if (!node) return;
+    const light = node.getAttribute('data-light-src');
+    const dark = node.getAttribute('data-dark-src');
+    if (theme === 'light' && light) node.src = light;
+    else if (theme === 'dark' && dark) node.src = dark;
+  };
+  apply(img('hero-banner'));
+  apply(img('hero-mark'));
+}

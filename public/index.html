@@ -36,6 +36,7 @@
           <a href="#solutions">Solutions</a>
           <a href="#pricing">Pricing</a>
           <a href="#safety">Safety</a>
+          <a href="#brand">Brand</a>
           <a href="../docs.html">Docs</a>
           <a href="../blog/">Blog</a>
         </nav>
@@ -53,6 +54,7 @@
           <a href="#solutions">Solutions</a>
           <a href="#pricing">Pricing</a>
           <a href="#safety">Safety</a>
+          <a href="#brand">Brand</a>
           <a href="../docs.html">Docs</a>
           <a href="../blog/">Blog</a>
           <a href="#chat">Console</a>
@@ -66,7 +68,7 @@
     <main>
       <section class="hero" id="home">
         <div class="hero-media">
-          <img src="./img/banner.svg" alt="MAHI LLM banner" />
+          <img id="hero-banner" src="./img/banner.svg" data-dark-src="./img/banner.svg" data-light-src="./img/banner-light.svg" alt="MAHI LLM banner" />
         </div>
         <div class="container hero-grid">
           <div class="hero-copy">
@@ -95,7 +97,7 @@
             </dl>
           </div>
           <div class="hero-card">
-            <img src="./img/mark.svg" alt="MahiLLM main mark" style="max-width:140px; border-radius:14px; border:1px solid var(--border); background: rgba(0,0,0,0.2); padding:8px;"/>
+            <img id="hero-mark" class="mark-img" src="./img/mark.svg" data-dark-src="./img/mark.svg" data-light-src="./img/mark-light.svg" alt="MahiLLM main mark"/>
             <h2>Launch in minutes</h2>
             <p>
               Upload checkpoints, set safety envelopes, and provision streaming endpoints without touching infrastructure.
@@ -337,6 +339,45 @@
                 </footer>
               </main>
             </div>
+          </div>
+        </div>
+      </section>
+
+      <section class="section" id="brand">
+        <div class="container">
+          <div class="section-head">
+            <h2>Brand assets</h2>
+            <p>Use these official MahiLLM assets. Please don’t alter colors, proportions, or apply effects.</p>
+          </div>
+          <div class="feature-grid">
+            <article class="card">
+              <h3>Banner — Dark</h3>
+              <img src="./img/banner.svg" alt="MahiLLM banner dark" style="width:100%; height:auto; border-radius:12px; border:1px solid var(--border)"/>
+              <div class="cta-group">
+                <a class="btn ghost" href="./img/banner.svg" download>Download SVG</a>
+              </div>
+            </article>
+            <article class="card">
+              <h3>Banner — Light</h3>
+              <img src="./img/banner-light.svg" alt="MahiLLM banner light" style="width:100%; height:auto; border-radius:12px; border:1px solid var(--border); background:#fff"/>
+              <div class="cta-group">
+                <a class="btn ghost" href="./img/banner-light.svg" download>Download SVG</a>
+              </div>
+            </article>
+            <article class="card">
+              <h3>Mark — Dark</h3>
+              <img src="./img/mark.svg" alt="MahiLLM mark dark" style="max-width:160px; border-radius:14px; border:1px solid var(--border); background: rgba(0,0,0,0.2); padding:8px;"/>
+              <div class="cta-group">
+                <a class="btn ghost" href="./img/mark.svg" download>Download SVG</a>
+              </div>
+            </article>
+            <article class="card">
+              <h3>Mark — Light</h3>
+              <img src="./img/mark-light.svg" alt="MahiLLM mark light" style="max-width:160px; border-radius:14px; border:1px solid var(--border); background: #fff; padding:8px;"/>
+              <div class="cta-group">
+                <a class="btn ghost" href="./img/mark-light.svg" download>Download SVG</a>
+              </div>
+            </article>
           </div>
         </div>
       </section>
