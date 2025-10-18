@@ -294,6 +294,9 @@ function setTheme(theme) {
       ? 'https://cdn.jsdelivr.net/npm/highlight.js@11.9.0/styles/github.min.css'
       : 'https://cdn.jsdelivr.net/npm/highlight.js@11.9.0/styles/github-dark.min.css';
   }
+  // Show wordmark below banner only in light theme if present
+  const wordmark = document.getElementById('hero-wordmark');
+  if (wordmark) wordmark.style.display = isLight ? 'block' : 'none';
 }
 
 // Theme toggle buttons

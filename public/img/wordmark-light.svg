@@ -1,0 +1,20 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg xmlns="http://www.w3.org/2000/svg" width="1024" height="300" viewBox="0 0 1024 300" role="img" aria-labelledby="title desc">
+  <title id="title">MahiLLM Wordmark (Light)</title>
+  <desc id="desc">Clean wordmark to use alongside the banner on light backgrounds.</desc>
+  <defs>
+    <linearGradient id="g" x1="0%" y1="0%" x2="100%" y2="0%">
+      <stop offset="0%" stop-color="#2970F1"/>
+      <stop offset="22%" stop-color="#E03D31"/>
+      <stop offset="44%" stop-color="#F2AE28"/>
+      <stop offset="66%" stop-color="#2FAE4B"/>
+      <stop offset="88%" stop-color="#2970F1"/>
+    </linearGradient>
+  </defs>
+  <!-- Transparent background for flexible embedding on white surfaces -->
+  <rect width="1024" height="300" fill="transparent"/>
+  <!-- Wordmark text centered -->
+  <g font-family="Inter, system-ui, -apple-system, 'Segoe UI', Arial, sans-serif" font-weight="700" text-anchor="middle">
+    <text x="512" y="190" font-size="120" fill="url(#g)">MAHI LLM</text>
+  </g>
+</svg>
