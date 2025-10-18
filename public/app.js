@@ -68,16 +68,25 @@ function autosize() {
 }
 inputEl.addEventListener('input', autosize);
 
+// Provide a simple in-browser fallback when there's no backend available
 async function streamChat(messages) {
   statusEl.textContent = 'Thinking…';
-  const res = await fetch('/api/chat', {
+  const apiBase = window.MAHI_API_BASE ?? '';
+  const endpoint = `${apiBase}/api/chat`;
+
+  let res;
+  try {
+    res = await fetch(endpoint, {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
     body: JSON.stringify({ messages })
-  });
+    });
+  } catch (e) {
+    // If fetch fails (e.g., on GitHub Pages), generate a demo response locally
+    return demoFallback(messages);
+  }
   if (!res.ok || !res.body) {
-    statusEl.textContent = 'Error';
-    throw new Error('No stream');
+    return demoFallback(messages);
   }
 
   const reader = res.body.getReader();
@@ -110,6 +119,33 @@ async function streamChat(messages) {
 
   currentMessages.push({ role: 'assistant', content: assistantContent });
   return assistantContent;
+}
+
+// Local demo fallback to keep the site functional on static hosts
+async function demoFallback(messages) {
+  const last = messages[messages.length - 1]?.content || '';
+  const preface = `This is a live demo preview. On a full deployment, responses stream from your hosted models.\n\n`;
+  const content = preface + generateDemoAnswer(last);
+  const bubble = addRow({ role: 'assistant', content: '' });
+  for (const ch of content) {
+    await new Promise((r) => setTimeout(r, 8));
+    bubble.innerHTML = '';
+    renderMarkdownTo(bubble, (bubble.textContent || '') + ch);
+    scrollToBottom();
+  }
+  statusEl.textContent = 'Ready';
+  currentMessages.push({ role: 'assistant', content });
+  return content;
+}
+
+function generateDemoAnswer(prompt) {
+  if (!prompt) return 'Ask me anything about MahiLLM, our models, or how to deploy your own assistant.';
+  const samples = [
+    `Here’s how MahiLLM would approach “${prompt}” in production:\n\n1. Parse your request\n2. Route to the best fine-tuned model\n3. Stream tokens with low latency\n4. Apply safety + formatting\n\nYou can connect this console to your hosted endpoint by deploying the Node server and setting MAHI_API_BASE.`,
+    `Quick take on “${prompt}”:\n\n- Draft an answer\n- Provide examples\n- Return structured JSON if needed\n\nThis page is running a static demo so you can preview the experience even without a backend.`,
+    `“${prompt}” is a great use case for a fine-tuned assistant. In MahiLLM you can:\n\n- Upload a checkpoint\n- Add guardrails\n- Stream responses to this UI\n\nSwap the demo with your endpoint to go live.`,
+  ];
+  return samples[Math.floor(Math.random() * samples.length)];
 }
 
 formEl.addEventListener('submit', async (e) => {
