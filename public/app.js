@@ -127,10 +127,11 @@ async function demoFallback(messages) {
   const preface = `This is a live demo preview. On a full deployment, responses stream from your hosted models.\n\n`;
   const content = preface + generateDemoAnswer(last);
   const bubble = addRow({ role: 'assistant', content: '' });
+  let acc = '';
   for (const ch of content) {
     await new Promise((r) => setTimeout(r, 8));
-    bubble.innerHTML = '';
-    renderMarkdownTo(bubble, (bubble.textContent || '') + ch);
+    acc += ch;
+    renderMarkdownTo(bubble, acc);
     scrollToBottom();
   }
   statusEl.textContent = 'Ready';
