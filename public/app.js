@@ -287,6 +287,13 @@ function setTheme(theme) {
   root.classList.toggle('theme-light', isLight);
   localStorage.setItem('mahi_theme', isLight ? 'light' : 'dark');
   swapThemeImages(isLight ? 'light' : 'dark');
+  // Swap highlight.js theme
+  const link = document.getElementById('hljs-theme');
+  if (link) {
+    link.href = isLight
+      ? 'https://cdn.jsdelivr.net/npm/highlight.js@11.9.0/styles/github.min.css'
+      : 'https://cdn.jsdelivr.net/npm/highlight.js@11.9.0/styles/github-dark.min.css';
+  }
 }
 
 // Theme toggle buttons
