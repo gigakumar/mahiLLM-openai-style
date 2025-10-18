@@ -8,6 +8,15 @@
       name="description"
       content="Deploy, orchestrate, and run your own fine-tuned language models with MahiLLM—an OpenAI-quality experience for your teams."
     />
+    <meta property="og:title" content="MahiLLM • Fine-tuned Intelligence Platform" />
+    <meta property="og:description" content="Host and deploy your own fine-tuned LLMs with OpenAI-grade UX. Try the live console." />
+    <meta property="og:type" content="website" />
+    <meta property="og:url" content="https://gigakumar.github.io/mahiLLM-openai-style/" />
+    <meta name="twitter:card" content="summary_large_image" />
+    <meta name="twitter:title" content="MahiLLM" />
+    <meta name="twitter:description" content="OpenAI-style experiences for your own models." />
+    <link rel="canonical" href="https://gigakumar.github.io/mahiLLM-openai-style/" />
+    <link rel="icon" type="image/svg+xml" href="../favicon.svg" />
     <link rel="preconnect" href="https://fonts.googleapis.com" />
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
     <link
@@ -20,7 +29,8 @@
     <header class="site-header">
       <div class="nav-shell container">
         <a href="#home" class="logo">MahiLLM</a>
-        <nav class="nav-links">
+        <button class="menu-toggle" id="menu-toggle" aria-label="Open menu">☰</button>
+        <nav class="nav-links" id="desktop-nav">
           <a href="#platform">Platform</a>
           <a href="#models">Models</a>
           <a href="#solutions">Solutions</a>
@@ -30,6 +40,17 @@
         <div class="nav-actions">
           <a href="#chat" class="btn ghost">Console</a>
           <a href="mailto:hello@mahillm.ai" class="btn primary">Talk to us</a>
+        </div>
+      </div>
+      <div class="mobile-nav" id="mobile-nav" aria-hidden="true">
+        <div class="mobile-nav-sheet">
+          <a href="#platform">Platform</a>
+          <a href="#models">Models</a>
+          <a href="#solutions">Solutions</a>
+          <a href="#pricing">Pricing</a>
+          <a href="#safety">Safety</a>
+          <a href="#chat">Console</a>
+          <button class="btn ghost" id="close-mobile">Close</button>
         </div>
       </div>
     </header>
@@ -261,6 +282,14 @@
               <main class="chat">
                 <header class="chat-header">
                   <div class="title">Chat</div>
+                  <div class="model-select">
+                    <label for="model-select" class="sr-only">Model</label>
+                    <select id="model-select" aria-label="Model">
+                      <option value="mahillm-instruct" selected>MahiLLM-Instruct</option>
+                      <option value="mahillm-code">MahiLLM-Code</option>
+                      <option value="mahillm-insight">MahiLLM-Insight</option>
+                    </select>
+                  </div>
                   <div class="status" id="status">Ready</div>
                 </header>
                 <section id="messages" class="messages" aria-live="polite"></section>
@@ -277,6 +306,36 @@
         </div>
       </section>
     </main>
+
+    <section class="section" id="faq">
+      <div class="container">
+        <div class="section-head">
+          <h2>Frequently asked questions</h2>
+          <p>Answers to the most common questions about the console and platform.</p>
+        </div>
+        <div class="faq">
+          <details>
+            <summary>Can I connect my own model backend?</summary>
+            <p>Yes. Host the Node server in this repo and set window.MAHI_API_BASE to point the UI at your endpoint.</p>
+          </details>
+          <details>
+            <summary>Is the demo streaming real?</summary>
+            <p>On static hosting, we simulate streaming so the UX is identical. When connected to your backend, tokens stream over SSE.</p>
+          </details>
+          <details>
+            <summary>Do you keep my data?</summary>
+            <p>In demo mode, nothing leaves your browser. When connected to your backend, data handling follows your server policies.</p>
+          </details>
+        </div>
+      </div>
+    </section>
+
+    <div class="cookie-banner" id="cookie-banner" role="dialog" aria-live="polite">
+      <div class="cookie-inner">
+        <p>We use cookies for essential site functionality. <a href="#safety">Learn more</a>.</p>
+        <button class="btn primary" id="cookie-accept">Accept</button>
+      </div>
+    </div>
 
     <footer class="site-footer">
       <div class="container footer-grid">
@@ -299,9 +358,32 @@
 
     <script>
       document.getElementById('year').textContent = new Date().getFullYear();
+      const mobileNav = document.getElementById('mobile-nav');
+      const menuBtn = document.getElementById('menu-toggle');
+      const closeBtn = document.getElementById('close-mobile');
+      const toggleNav = (open) => {
+        mobileNav.classList.toggle('open', open);
+        mobileNav.setAttribute('aria-hidden', !open);
+      };
+      menuBtn?.addEventListener('click', () => toggleNav(true));
+      closeBtn?.addEventListener('click', () => toggleNav(false));
+      mobileNav?.addEventListener('click', (e) => {
+        if (e.target === mobileNav) toggleNav(false);
+      });
+
+      const cookieKey = 'mahi_cookie_ok';
+      const banner = document.getElementById('cookie-banner');
+      const accept = document.getElementById('cookie-accept');
+      if (!localStorage.getItem(cookieKey)) banner.classList.add('show');
+      accept?.addEventListener('click', () => {
+        localStorage.setItem(cookieKey, '1');
+        banner.classList.remove('show');
+      });
     </script>
-  <script>window.MAHI_API_BASE = window.MAHI_API_BASE || '';</script>
+    <script>window.MAHI_API_BASE = window.MAHI_API_BASE || '';</script>
   <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/highlight.js@11.9.0/styles/github-dark.min.css">
+    <script src="https://cdn.jsdelivr.net/npm/highlight.js@11.9.0/lib/common.min.js"></script>
   <script src="./app.js" type="module"></script>
   </body>
 </html>

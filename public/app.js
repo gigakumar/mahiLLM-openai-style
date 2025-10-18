@@ -8,6 +8,7 @@ const inputEl = el('#input');
 const formEl = el('#form');
 const historyEl = el('#history');
 const newChatBtn = el('#new-chat');
+const modelSelect = el('#model-select');
 
 const history = [];
 let currentMessages = [];
@@ -95,6 +96,7 @@ async function streamChat(messages) {
   let assistantContent = '';
   const bubble = addRow({ role: 'assistant', content: '' });
 
+  // Highlight code blocks as chunks arrive
   while (true) {
     const { done, value } = await reader.read();
     if (done) break;
@@ -108,6 +110,7 @@ async function streamChat(messages) {
         if (json.token) {
           assistantContent += json.token;
           renderMarkdownTo(bubble, assistantContent);
+          if (window.hljs) bubble.querySelectorAll('pre code').forEach((b) => window.hljs.highlightElement(b));
           scrollToBottom();
         }
         if (json.done) {
@@ -125,13 +128,15 @@ async function streamChat(messages) {
 async function demoFallback(messages) {
   const last = messages[messages.length - 1]?.content || '';
   const preface = `This is a live demo preview. On a full deployment, responses stream from your hosted models.\n\n`;
-  const content = preface + generateDemoAnswer(last);
+  const selected = modelSelect?.value || 'mahillm-instruct';
+  const content = preface + generateDemoAnswer(last, selected);
   const bubble = addRow({ role: 'assistant', content: '' });
   let acc = '';
   for (const ch of content) {
     await new Promise((r) => setTimeout(r, 8));
     acc += ch;
     renderMarkdownTo(bubble, acc);
+    if (window.hljs) bubble.querySelectorAll('pre code').forEach((b) => window.hljs.highlightElement(b));
     scrollToBottom();
   }
   statusEl.textContent = 'Ready';
@@ -139,15 +144,46 @@ async function demoFallback(messages) {
   return content;
 }
 
-function generateDemoAnswer(prompt) {
+function generateDemoAnswer(prompt, model) {
   if (!prompt) return 'Ask me anything about MahiLLM, our models, or how to deploy your own assistant.';
   const samples = [
-    `Here’s how MahiLLM would approach “${prompt}” in production:\n\n1. Parse your request\n2. Route to the best fine-tuned model\n3. Stream tokens with low latency\n4. Apply safety + formatting\n\nYou can connect this console to your hosted endpoint by deploying the Node server and setting MAHI_API_BASE.`,
-    `Quick take on “${prompt}”:\n\n- Draft an answer\n- Provide examples\n- Return structured JSON if needed\n\nThis page is running a static demo so you can preview the experience even without a backend.`,
-    `“${prompt}” is a great use case for a fine-tuned assistant. In MahiLLM you can:\n\n- Upload a checkpoint\n- Add guardrails\n- Stream responses to this UI\n\nSwap the demo with your endpoint to go live.`,
+    `Here’s how ${model} would approach “${prompt}” in production:\n\n1. Parse your request\n2. Route to the best fine-tuned model\n3. Stream tokens with low latency\n4. Apply safety + formatting\n\nConnect this UI to your endpoint by deploying the Node server and setting MAHI_API_BASE.`,
+    `Quick take on “${prompt}” with ${model}:\n\n- Draft an answer\n- Provide examples\n- Return structured JSON if needed\n\nThis page is running a static demo so you can preview the experience even without a backend.`,
+    `“${prompt}” is a great use case for a fine-tuned assistant. With ${model} you can:\n\n- Upload a checkpoint\n- Add guardrails\n- Stream responses to this UI\n\nSwap the demo with your endpoint to go live.`,
   ];
   return samples[Math.floor(Math.random() * samples.length)];
 }
+
+// Persist conversation history locally per model
+const HISTORY_KEY = 'mahi_history_v1';
+function saveHistory() {
+  try {
+    const payload = { model: modelSelect?.value || 'mahillm-instruct', messages: currentMessages };
+    localStorage.setItem(HISTORY_KEY, JSON.stringify(payload));
+  } catch {}
+}
+function loadHistory() {
+  try {
+    const raw = localStorage.getItem(HISTORY_KEY);
+    if (!raw) return;
+    const { model, messages } = JSON.parse(raw);
+    if (modelSelect) modelSelect.value = model || modelSelect.value;
+    if (Array.isArray(messages)) {
+      currentMessages = [];
+      messagesEl.innerHTML = '';
+      for (const m of messages) {
+        currentMessages.push(m);
+        addRow(m);
+      }
+    }
+  } catch {}
+}
+
+window.addEventListener('beforeunload', saveHistory);
+document.addEventListener('visibilitychange', () => {
+  if (document.visibilityState === 'hidden') saveHistory();
+});
+loadHistory();
 
 formEl.addEventListener('submit', async (e) => {
   e.preventDefault();
