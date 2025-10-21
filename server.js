@@ -15,9 +15,16 @@ app.use(express.json());
 const __dirnameResolved = path.resolve();
 const publicDir = path.join(__dirnameResolved, 'public');
 
-// Views: EJS templates for pages
-app.set('views', path.join(__dirnameResolved, 'views'));
-app.set('view engine', 'ejs');
+// Try to enable EJS templates if available; otherwise we'll fall back to static files.
+let hasEJS = false;
+try {
+  await import('ejs');
+  app.set('views', path.join(__dirnameResolved, 'views'));
+  app.set('view engine', 'ejs');
+  hasEJS = true;
+} catch {
+  // EJS not installed; proceed without it.
+}
 
 // Static assets
 app.use(express.static(publicDir));
@@ -26,14 +33,19 @@ app.get('/favicon.svg', (req, res) => {
   res.sendFile(path.join(__dirnameResolved, 'favicon.svg'));
 });
 
-// Pages
-app.get('/', (req, res) => res.render('index'));
-app.get('/docs', (req, res) => res.render('docs'));
-app.get('/blog', (req, res) => res.render('blog'));
-// Legacy/alias routes to support existing links
-app.get('/docs.html', (req, res) => res.render('docs'));
-app.get('/blog/', (req, res) => res.render('blog'));
-app.get('/blog/index.html', (req, res) => res.render('blog'));
+// Pages: render via EJS when available, otherwise serve static HTML files
+app.get('/', (req, res) => {
+  if (hasEJS) return res.render('index');
+  return res.sendFile(path.join(publicDir, 'index.html'));
+});
+app.get(['/docs', '/docs.html'], (req, res) => {
+  if (hasEJS) return res.render('docs');
+  return res.sendFile(path.join(__dirnameResolved, 'docs.html'));
+});
+app.get(['/blog', '/blog/', '/blog/index.html'], (req, res) => {
+  if (hasEJS) return res.render('blog');
+  return res.sendFile(path.join(__dirnameResolved, 'blog', 'index.html'));
+});
 
 // Utility: simple SSE writer
 function sseWrite(res, data) {
