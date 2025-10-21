@@ -274,13 +274,42 @@
               <main class="chat">
                 <header class="chat-header">
                   <div class="title">Chat</div>
+                  <div class="tools">
+                    <div class="model-select">
+                      <label for="model-select">Model:</label>
+                      <select id="model-select">
+                        <option value="mahillm-instruct">MahiLLM-Instruct</option>
+                        <option value="mahillm-code">MahiLLM-Code</option>
+                        <option value="mahillm-insight">MahiLLM-Insight</option>
+                        <option value="gpt-4o-mini">GPT-4o Mini</option>
+                        <option value="gpt-4o">GPT-4o</option>
+                        <option value="claude-3-haiku">Claude 3 Haiku</option>
+                        <option value="claude-3-sonnet">Claude 3 Sonnet</option>
+                      </select>
+                    </div>
+                    <button id="btn-settings" class="icon-btn" title="Settings" aria-label="Settings">⚙️</button>
+                    <button id="btn-clear" class="icon-btn" title="Clear chat" aria-label="Clear chat">🗑️</button>
+                  </div>
                   <div class="status" id="status">Ready</div>
                 </header>
                 <section id="messages" class="messages" aria-live="polite"></section>
                 <footer class="composer">
                   <form id="form">
-                    <textarea id="input" rows="1" placeholder="Message MahiLLM..." autocomplete="off"></textarea>
-                    <button id="send" class="send" aria-label="Send" title="Send">➤</button>
+                    <div class="input-container">
+                      <div class="file-upload">
+                        <input type="file" id="files" multiple accept=".txt,.pdf,.doc,.docx,.md" style="display: none;">
+                        <button type="button" id="btn-upload" class="icon-btn" title="Upload files" aria-label="Upload files">📎</button>
+                      </div>
+                      <textarea id="input" rows="1" placeholder="Message MahiLLM..." autocomplete="off"></textarea>
+                      <button id="send" class="send" aria-label="Send" title="Send">➤</button>
+                    </div>
+                    <div class="file-list" id="file-list"></div>
+                    <div class="suggestions" id="suggestions">
+                      <button class="chip" data-suggest="Explain quantum computing">Explain quantum computing</button>
+                      <button class="chip" data-suggest="Write a Python function to sort a list">Write a Python function to sort a list</button>
+                      <button class="chip" data-suggest="Help me plan a project">Help me plan a project</button>
+                      <button class="chip" data-suggest="What are the latest AI trends?">What are the latest AI trends?</button>
+                    </div>
                   </form>
                   <div class="hint">MahiLLM may make mistakes. Consider checking important info.</div>
                 </footer>

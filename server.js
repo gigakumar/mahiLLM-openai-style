@@ -14,7 +14,38 @@ app.use(express.json());
 
 const __dirnameResolved = path.resolve();
 const publicDir = path.join(__dirnameResolved, 'public');
+
+// Try to enable EJS templates if available; otherwise we'll fall back to static files.
+let hasEJS = false;
+try {
+  await import('ejs');
+  app.set('views', path.join(__dirnameResolved, 'views'));
+  app.set('view engine', 'ejs');
+  hasEJS = true;
+} catch {
+  // EJS not installed; proceed without it.
+}
+
+// Static assets
 app.use(express.static(publicDir));
+// Serve favicon from repo root
+app.get('/favicon.svg', (req, res) => {
+  res.sendFile(path.join(__dirnameResolved, 'favicon.svg'));
+});
+
+// Pages: render via EJS when available, otherwise serve static HTML files
+app.get('/', (req, res) => {
+  if (hasEJS) return res.render('index');
+  return res.sendFile(path.join(publicDir, 'index.html'));
+});
+app.get(['/docs', '/docs.html'], (req, res) => {
+  if (hasEJS) return res.render('docs');
+  return res.sendFile(path.join(__dirnameResolved, 'docs.html'));
+});
+app.get(['/blog', '/blog/', '/blog/index.html'], (req, res) => {
+  if (hasEJS) return res.render('blog');
+  return res.sendFile(path.join(__dirnameResolved, 'blog', 'index.html'));
+});
 
 // Utility: simple SSE writer
 function sseWrite(res, data) {
@@ -114,14 +145,35 @@ app.post('/api/chat', async (req, res) => {
   }
 });
 
-// SPA fallback
-app.get('*', (req, res) => {
-  const filePath = path.join(publicDir, 'index.html');
-  if (fs.existsSync(filePath)) {
-    res.sendFile(filePath);
-  } else {
-    res.status(404).send('index.html missing');
+// POST /api/plan - returns a mock local plan for personalized automation (no external calls)
+app.post('/api/plan', (req, res) => {
+  try {
+    const { goal = '', sources = {} } = req.body || {};
+    const enabled = Object.entries(sources || {})
+      .filter(([, v]) => !!v)
+      .map(([k]) => k);
+    const steps = [];
+    if (goal) steps.push({ step: 'Understand goal', action: `Parse: ${goal.slice(0, 120)}` });
+    if (enabled.includes('email')) steps.push({ step: 'Email', action: 'Summarize inbox and draft replies' });
+    if (enabled.includes('calendar')) steps.push({ step: 'Calendar', action: 'Check availability and propose slots' });
+    if (enabled.includes('messages')) steps.push({ step: 'Messages', action: 'Extract intents from latest threads' });
+    if (enabled.includes('browser')) steps.push({ step: 'Browser', action: 'Fetch relevant pages from history' });
+    if (!steps.length) steps.push({ step: 'Idle', action: 'Await user goal' });
+    const plan = {
+      privacy: { mode: 'on-device', uploads: false },
+      sources: enabled,
+      steps,
+      outputs: ['drafts', 'events', 'reminders'],
+    };
+    res.json(plan);
+  } catch (e) {
+    res.status(400).json({ error: 'bad_request' });
   }
+});
+
+// Fallback 404 page for unknown routes
+app.use((req, res) => {
+  res.status(404).send('Not Found');
 });
 
 app.listen(PORT, () => {

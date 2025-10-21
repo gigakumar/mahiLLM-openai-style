@@ -1,0 +1,15 @@
+[package]
+name = "core"
+version = "0.1.0"
+edition = "2021"
+
+[dependencies]
+tonic = { version = "0.11", package = "tonic" }
+prost = "0.12"
+tokio = { version = "1.39", features = ["macros", "rt-multi-thread"] }
+futures-util = "0.3"
+serde_json = "1.0"
+async-stream = "0.3"
+
+[build-dependencies]
+tonic-build = "0.11"

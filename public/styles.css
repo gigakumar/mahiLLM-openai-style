@@ -415,6 +415,13 @@ canvas#hero-canvas { position: absolute; inset: 0; width: 100%; height: 100%; po
 }
 
 .badge {
+
+/* Automation demo */
+.automation-card { display: grid; gap: 12px; }
+.auto-form textarea { width: 100%; background: rgba(14,19,29,0.9); color: var(--text); border: 1px solid var(--border); border-radius: 10px; padding: 10px; }
+.theme-light .auto-form textarea { background: #fff; }
+.auto-sources { display: flex; gap: 14px; flex-wrap: wrap; color: var(--text-soft); }
+.auto-result { margin-top: 8px; background: var(--code-bg); color: var(--text); border: 1px solid var(--border); padding: 12px; border-radius: 12px; max-height: 260px; overflow: auto; }
   display: inline-flex;
   align-items: center;
   padding: 6px 12px;

@@ -1,0 +1,20 @@
+syntax = "proto3";
+package assistant;
+
+message Request {
+  string id = 1;
+  string user_id = 2;
+  string type = 3; // "query","action","index"
+  string payload = 4; // JSON string
+}
+
+message Response {
+  string id = 1;
+  int32 status = 2;
+  string payload = 3; // JSON string
+}
+
+service Assistant {
+  rpc Send(Request) returns (Response);
+  rpc StreamResponses(stream Request) returns (stream Response);
+}
