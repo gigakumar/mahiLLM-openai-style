@@ -1,0 +1,18 @@
+[package]
+name = "assistant"
+version = "0.1.0"
+edition = "2021"
+
+[dependencies]
+tokio = { version = "1.37", features = ["macros", "rt-multi-thread", "time"] }
+tonic = { version = "0.11", features = ["transport"] }
+prost = "0.12"
+prost-types = "0.12"
+tracing = "0.1"
+tracing-subscriber = { version = "0.3", features = ["fmt", "env-filter"] }
+
+[build-dependencies]
+tonic-build = "0.11"
+
+[package.metadata]
+description = "MahiLLM Assistant core gRPC service"

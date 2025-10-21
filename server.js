@@ -3,6 +3,7 @@ import cors from 'cors';
 import fs from 'fs';
 import path from 'path';
 import dotenv from 'dotenv';
+import * as url from 'url';
 
 dotenv.config();
 
@@ -14,6 +15,34 @@ app.use(express.json());
 
 const __dirnameResolved = path.resolve();
 const publicDir = path.join(__dirnameResolved, 'public');
+
+// Optional: gRPC Assistant/Indexer wiring
+let grpc = null;
+let protoLoader = null;
+let grpcServices = null;
+let grpcEnabled = false;
+const ASSISTANT_GRPC_ADDR = process.env.ASSISTANT_GRPC_ADDR || '127.0.0.1:50051';
+try {
+  // Only attempt if explicitly enabled or dependencies are present
+  if (process.env.USE_ASSISTANT_GRPC === '1') {
+    grpc = await import('@grpc/grpc-js');
+    protoLoader = await import('@grpc/proto-loader');
+    const protoPath = path.join(__dirnameResolved, 'ondevice-ai', 'proto', 'assistant.proto');
+    const packageDefinition = protoLoader.loadSync(protoPath, {
+      keepCase: true,
+      longs: String,
+      enums: String,
+      defaults: true,
+      oneofs: true,
+    });
+    const loaded = grpc.loadPackageDefinition(packageDefinition);
+    grpcServices = loaded.assistant;
+    grpcEnabled = true;
+    console.log(`[gRPC] Enabled. Target: ${ASSISTANT_GRPC_ADDR}`);
+  }
+} catch (e) {
+  console.warn('[gRPC] Disabled (missing deps or USE_ASSISTANT_GRPC not set).');
+}
 
 // Try to enable EJS templates if available; otherwise we'll fall back to static files.
 let hasEJS = false;
@@ -169,6 +198,62 @@ app.post('/api/plan', (req, res) => {
   } catch (e) {
     res.status(400).json({ error: 'bad_request' });
   }
+});
+
+// ---- Optional gRPC-backed endpoints ----
+// Assistant.Send
+app.post('/api/assistant/send', async (req, res) => {
+  if (!grpcEnabled || !grpcServices) return res.status(503).json({ error: 'grpc_disabled' });
+  const client = new grpcServices.Assistant(ASSISTANT_GRPC_ADDR, grpc.credentials.createInsecure());
+  const { id = '1', user_id = 'u1', type = 'query', payload = '' } = req.body || {};
+  client.Send({ id, user_id, type, payload }, (err, resp) => {
+    if (err) return res.status(500).json({ error: 'grpc_error', details: err.message });
+    res.json(resp);
+  });
+});
+
+// Assistant.StreamResponses -> SSE bridge
+app.post('/api/assistant/stream', async (req, res) => {
+  if (!grpcEnabled || !grpcServices) return res.status(503).json({ error: 'grpc_disabled' });
+  setupSSE(res);
+  const client = new grpcServices.Assistant(ASSISTANT_GRPC_ADDR, grpc.credentials.createInsecure());
+  const call = client.StreamResponses();
+  call.on('data', (msg) => {
+    try { sseWrite(res, JSON.stringify(msg)); } catch {}
+  });
+  call.on('error', (err) => {
+    try { sseWrite(res, JSON.stringify({ error: 'stream_error', details: err.message })); } catch {}
+    res.end();
+  });
+  call.on('end', () => {
+    try { sseWrite(res, JSON.stringify({ done: true })); } catch {}
+    res.end();
+  });
+  const { id = 'stream-1', user_id = 'u1', type = 'demo', payload = 'start' } = req.body || {};
+  call.write({ id, user_id, type, payload });
+  call.end();
+});
+
+// Indexer.Index
+app.post('/api/index', (req, res) => {
+  if (!grpcEnabled || !grpcServices) return res.status(503).json({ error: 'grpc_disabled' });
+  const client = new grpcServices.Indexer(ASSISTANT_GRPC_ADDR, grpc.credentials.createInsecure());
+  const { id = '', text = '' } = req.body || {};
+  client.Index({ id, text }, (err, resp) => {
+    if (err) return res.status(500).json({ error: 'grpc_error', details: err.message });
+    res.json(resp);
+  });
+});
+
+// Indexer.Query
+app.post('/api/query', (req, res) => {
+  if (!grpcEnabled || !grpcServices) return res.status(503).json({ error: 'grpc_disabled' });
+  const client = new grpcServices.Indexer(ASSISTANT_GRPC_ADDR, grpc.credentials.createInsecure());
+  const { query = '', k = 5 } = req.body || {};
+  client.Query({ query, k }, (err, resp) => {
+    if (err) return res.status(500).json({ error: 'grpc_error', details: err.message });
+    res.json(resp);
+  });
 });
 
 // Fallback 404 page for unknown routes
