@@ -36,6 +36,7 @@
           <a href="#platform">Platform</a>
           <a href="#models">Models</a>
           <a href="#solutions">Solutions</a>
+          <a href="#automation">Automation</a>
           <a href="#pricing">Pricing</a>
           <a href="#safety">Safety</a>
           <a href="#brand">Brand</a>
@@ -217,6 +218,29 @@
               <p>Integrate with one SDK that spans chat, batch, and structured generation.</p>
             </article>
           </div>
+        </div>
+      </section>
+
+      <section class="section surface" id="automation">
+        <div class="container">
+          <div class="section-head">
+            <h2>Personalized automation (demo)</h2>
+            <p>Plan tasks locally from on-device sources. This mock shows orchestration logic only—no data ever leaves the browser in this demo.</p>
+          </div>
+          <article class="card automation-card">
+            <form id="auto-form" class="auto-form">
+              <label for="auto-goal" class="sr-only">Goal</label>
+              <textarea id="auto-goal" rows="2" placeholder="e.g., Schedule a product sync with Sarah next week"></textarea>
+              <div class="auto-sources">
+                <label><input type="checkbox" id="src-email" /> Email</label>
+                <label><input type="checkbox" id="src-calendar" checked/> Calendar</label>
+                <label><input type="checkbox" id="src-messages" /> Messages</label>
+                <label><input type="checkbox" id="src-browser" /> Browser</label>
+              </div>
+              <div class="cta-group"><button class="btn primary" type="submit">Plan on device</button></div>
+            </form>
+            <pre id="auto-result" class="auto-result" aria-live="polite"></pre>
+          </article>
         </div>
       </section>
 

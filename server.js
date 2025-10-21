@@ -145,6 +145,32 @@ app.post('/api/chat', async (req, res) => {
   }
 });
 
+// POST /api/plan - returns a mock local plan for personalized automation (no external calls)
+app.post('/api/plan', (req, res) => {
+  try {
+    const { goal = '', sources = {} } = req.body || {};
+    const enabled = Object.entries(sources || {})
+      .filter(([, v]) => !!v)
+      .map(([k]) => k);
+    const steps = [];
+    if (goal) steps.push({ step: 'Understand goal', action: `Parse: ${goal.slice(0, 120)}` });
+    if (enabled.includes('email')) steps.push({ step: 'Email', action: 'Summarize inbox and draft replies' });
+    if (enabled.includes('calendar')) steps.push({ step: 'Calendar', action: 'Check availability and propose slots' });
+    if (enabled.includes('messages')) steps.push({ step: 'Messages', action: 'Extract intents from latest threads' });
+    if (enabled.includes('browser')) steps.push({ step: 'Browser', action: 'Fetch relevant pages from history' });
+    if (!steps.length) steps.push({ step: 'Idle', action: 'Await user goal' });
+    const plan = {
+      privacy: { mode: 'on-device', uploads: false },
+      sources: enabled,
+      steps,
+      outputs: ['drafts', 'events', 'reminders'],
+    };
+    res.json(plan);
+  } catch (e) {
+    res.status(400).json({ error: 'bad_request' });
+  }
+});
+
 // Fallback 404 page for unknown routes
 app.use((req, res) => {
   res.status(404).send('Not Found');

@@ -19,6 +19,10 @@ const tempInput = el('#temp');
 const tempVal = el('#temp-val');
 const filesInput = el('#files');
 const fileList = el('#file-list');
+// Automation selectors
+const autoForm = el('#auto-form');
+const autoGoal = el('#auto-goal');
+const autoResult = el('#auto-result');
 
 const history = [];
 let currentMessages = [];
@@ -340,3 +344,27 @@ function swapThemeImages(theme) {
   apply(img('hero-mark'));
   apply(img('nav-logo'));
 }
+
+// Personalized automation demo
+autoForm?.addEventListener('submit', async (e) => {
+  e.preventDefault();
+  const apiBase = window.MAHI_API_BASE ?? '';
+  const goal = autoGoal?.value?.trim() || '';
+  const sources = {
+    email: el('#src-email')?.checked || false,
+    calendar: el('#src-calendar')?.checked || false,
+    messages: el('#src-messages')?.checked || false,
+    browser: el('#src-browser')?.checked || false,
+  };
+  autoResult.textContent = 'Planning…';
+  try {
+    const res = await fetch(`${apiBase}/api/plan`, {
+      method: 'POST', headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ goal, sources })
+    });
+    const json = await res.json();
+    autoResult.textContent = JSON.stringify(json, null, 2);
+  } catch (err) {
+    autoResult.textContent = 'Failed to plan.';
+  }
+});
