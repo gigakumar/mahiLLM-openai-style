@@ -1,8 +1,0 @@
-fn main() {
-    println!("cargo:rerun-if-changed=../proto/assistant.proto");
-    tonic_build::configure()
-        .build_server(true)
-        .build_client(true)
-        .compile(&["../proto/assistant.proto"], &["../proto"]) 
-        .expect("failed to compile protos");
-}
