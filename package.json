@@ -8,6 +8,7 @@
   "scripts": {
     "start": "node server.js",
     "dev": "node server.js",
+    "desktop": "npm --prefix desktop run dev",
     "assistant:run": "cargo run --manifest-path assistant/Cargo.toml",
     "assistant:client": "cargo run --manifest-path assistant/Cargo.toml --example client"
   },

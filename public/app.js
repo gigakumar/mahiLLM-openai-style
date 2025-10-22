@@ -1,6 +1,9 @@
 // Minimal markdown using marked (loaded via CDN)
 const md = window.marked ?? { parse: (t) => t };
-const API_BASE = window.MAHI_API_BASE ?? '';
+// Support Electron preload config
+const APP_CFG = window.MAHI_APP_CONFIG || {};
+const API_BASE = (window.MAHI_API_BASE ?? APP_CFG.API_BASE ?? '');
+const API_DIRECT = Boolean(window.MAHI_API_DIRECT ?? APP_CFG.API_DIRECT ?? false);
 
 const el = (sel) => document.querySelector(sel);
 const messagesEl = el('#messages');
@@ -59,13 +62,29 @@ let docsLoaded = false;
 
 const SAMPLE_INDEX_TEXT = `Welcome to MahiLLM!\n\nThis document is indexed locally so the assistant can answer onboarding questions:\n- Mission: Deliver private, on-device AI workflows.\n- Pillars: Privacy, Speed, Delight.\n- Contacts: Sarah (Product), Dev (Engineering), Lila (Design).`;
 
+function mapApiPath(p) {
+  if (!API_DIRECT) return p;
+  if (!p.startsWith('/api/')) return p;
+  const tail = p.slice('/api/'.length);
+  const mapping = {
+    'plan': '/v1/task',
+    'task/execute': '/v1/task/execute',
+    'documents': '/v1/documents',
+    'index': '/v1/index',
+    'query': '/v1/query',
+    'embed': '/v1/embed',
+  };
+  return mapping[tail] || p;
+}
+
 function buildEndpoint(path, query) {
+  const mapped = mapApiPath(path);
   const base = API_BASE || '';
   const baseAbsolute = base && /^https?:/.test(base)
     ? base
     : `${window.location.origin}${base.startsWith('/') ? base : base ? `/${base}` : ''}`;
   const normalizedBase = baseAbsolute.endsWith('/') ? baseAbsolute : `${baseAbsolute}/`;
-  const url = new URL(path.replace(/^\//, ''), normalizedBase);
+  const url = new URL(mapped.replace(/^\//, ''), normalizedBase);
   if (query && typeof query === 'object') {
     for (const [key, value] of Object.entries(query)) {
       if (value === undefined || value === null || Number.isNaN(value)) continue;
