@@ -19,33 +19,7 @@ const PYTHON_ASSISTANT_URL = process.env.PYTHON_ASSISTANT_URL || 'http://127.0.0
 const pythonDisabled = process.env.DISABLE_PYTHON_ASSISTANT === '1';
 const pythonEnabled = !pythonDisabled;
 
-// Optional: gRPC Assistant/Indexer wiring
-let grpc = null;
-let protoLoader = null;
-let grpcServices = null;
-let grpcEnabled = false;
-const ASSISTANT_GRPC_ADDR = process.env.ASSISTANT_GRPC_ADDR || '127.0.0.1:50051';
-try {
-  // Only attempt if explicitly enabled or dependencies are present
-  if (process.env.USE_ASSISTANT_GRPC === '1') {
-    grpc = await import('@grpc/grpc-js');
-    protoLoader = await import('@grpc/proto-loader');
-    const protoPath = path.join(__dirnameResolved, 'ondevice-ai', 'proto', 'assistant.proto');
-    const packageDefinition = protoLoader.loadSync(protoPath, {
-      keepCase: true,
-      longs: String,
-      enums: String,
-      defaults: true,
-      oneofs: true,
-    });
-    const loaded = grpc.loadPackageDefinition(packageDefinition);
-    grpcServices = loaded.assistant;
-    grpcEnabled = true;
-    console.log(`[gRPC] Enabled. Target: ${ASSISTANT_GRPC_ADDR}`);
-  }
-} catch (e) {
-  console.warn('[gRPC] Disabled (missing deps or USE_ASSISTANT_GRPC not set).');
-}
+// gRPC wiring removed; Python FastAPI is the single source of truth
 
 // Try to enable EJS templates if available; otherwise we'll fall back to static files.
 let hasEJS = false;
@@ -234,34 +208,6 @@ app.post('/api/plan', async (req, res) => {
     const response = await callPython('/v1/task', { method: 'POST', body: payload });
     res.json(response);
   } catch (err) {
-    if (grpcEnabled && grpcServices) {
-      console.warn('[plan] Python assistant unavailable, falling back to mock plan.');
-      const { goal = '', sources = {} } = req.body || {};
-      const enabled = Object.entries(sources || {})
-        .filter(([, v]) => !!v)
-        .map(([k]) => k);
-      const steps = [];
-      if (goal) steps.push({ step: 'Understand goal', action: `Parse: ${goal.slice(0, 120)}` });
-      if (enabled.includes('email')) steps.push({ step: 'Email', action: 'Summarize inbox and draft replies' });
-      if (enabled.includes('calendar')) steps.push({ step: 'Calendar', action: 'Check availability and propose slots' });
-      if (enabled.includes('messages')) steps.push({ step: 'Messages', action: 'Extract intents from latest threads' });
-      if (enabled.includes('browser')) steps.push({ step: 'Browser', action: 'Fetch relevant pages from history' });
-      if (!steps.length) steps.push({ step: 'Idle', action: 'Await user goal' });
-      return res.json({
-        plan: {
-          status: 'draft',
-          steps: steps.map((s, idx) => ({
-            id: `mock-${idx + 1}`,
-            action: 'noop',
-            description: `${s.step}: ${s.action}`,
-            requires_confirmation: false,
-            params: {},
-          })),
-          metadata: { source: 'mock' },
-        },
-        audit_id: 'mock-plan',
-      });
-    }
     const status = err?.status || 500;
     res.status(status).json({ error: 'plan_failed', details: err?.payload || err?.message || 'unknown_error' });
   }
@@ -297,145 +243,54 @@ app.post('/api/task/execute', async (req, res) => {
   }
 });
 
-// ---- Optional gRPC-backed endpoints ----
-// Assistant.Send
-app.post('/api/assistant/send', async (req, res) => {
-  if (!grpcEnabled || !grpcServices) return res.status(503).json({ error: 'grpc_disabled', hint: 'Set USE_ASSISTANT_GRPC=1 and install gRPC deps.' });
-  const client = new grpcServices.Assistant(ASSISTANT_GRPC_ADDR, grpc.credentials.createInsecure());
-  const { id = '1', user_id = 'u1', type = 'query', payload = '' } = req.body || {};
-  client.Send({ id, user_id, type, payload }, (err, resp) => {
-    if (err) return res.status(500).json({ error: 'grpc_error', details: err.message });
-    res.json(resp);
-  });
-});
-
-// Assistant.StreamResponses -> SSE bridge
-app.post('/api/assistant/stream', async (req, res) => {
-  if (!grpcEnabled || !grpcServices) return res.status(503).json({ error: 'grpc_disabled', hint: 'Set USE_ASSISTANT_GRPC=1 and install gRPC deps.' });
-  setupSSE(res);
-  const client = new grpcServices.Assistant(ASSISTANT_GRPC_ADDR, grpc.credentials.createInsecure());
-  const call = client.StreamResponses();
-  call.on('data', (msg) => {
-    try { sseWrite(res, JSON.stringify(msg)); } catch {}
-  });
-  call.on('error', (err) => {
-    try { sseWrite(res, JSON.stringify({ error: 'stream_error', details: err.message })); } catch {}
-    res.end();
-  });
-  call.on('end', () => {
-    try { sseWrite(res, JSON.stringify({ done: true })); } catch {}
-    res.end();
-  });
-  try {
-    const { messages, id = `stream-${Date.now()}`, user_id = 'u1', type = 'demo', payload = 'start' } = req.body || {};
-    if (Array.isArray(messages) && messages.length) {
-      messages.forEach((m, idx) => {
-        call.write({
-          id: m.id || `${id}-${idx}`,
-          user_id: m.user_id || user_id,
-          type: m.type || type,
-          payload: typeof m.payload === 'string' ? m.payload : JSON.stringify(m.payload ?? {}),
-        });
-      });
-    } else {
-      call.write({ id, user_id, type, payload });
-    }
-  } catch (err) {
-    try { sseWrite(res, JSON.stringify({ error: 'request_error', details: err.message })); } catch {}
-  }
-  call.end();
-});
-
 // Index document via Python assistant, fallback to gRPC when available
 app.post('/api/index', async (req, res) => {
-  if (pythonEnabled) {
-    try {
-      const payload = req.body || {};
-      const body = {
-        document_id: payload.document_id || payload.id || payload.doc_id || `doc-${Date.now()}`,
-        text: payload.text || payload.body || '',
-        metadata: payload.metadata || payload.meta || {},
-      };
-      const response = await callPython('/v1/index', { method: 'POST', body });
-      return res.json(response);
-    } catch (err) {
-      console.warn('[index] Python assistant error:', err?.message || err);
-      if (!grpcEnabled || !grpcServices) {
-        const status = err?.status || 500;
-        return res.status(status).json({ error: 'index_failed', details: err?.payload || err?.message || 'unknown_error' });
-      }
-    }
+  try {
+    const payload = req.body || {};
+    const body = {
+      document_id: payload.document_id || payload.id || payload.doc_id || `doc-${Date.now()}`,
+      text: payload.text || payload.body || '',
+      metadata: payload.metadata || payload.meta || {},
+    };
+    const response = await callPython('/v1/index', { method: 'POST', body });
+    return res.json(response);
+  } catch (err) {
+    const status = err?.status || 500;
+    return res.status(status).json({ error: 'index_failed', details: err?.payload || err?.message || 'unknown_error' });
   }
-  if (!grpcEnabled || !grpcServices) {
-    return res.status(503).json({ error: 'assistant_unavailable', hint: 'Start python assistant or enable gRPC.' });
-  }
-  const client = new grpcServices.Indexer(ASSISTANT_GRPC_ADDR, grpc.credentials.createInsecure());
-  const { id = '', text = '' } = req.body || {};
-  client.Index({ id, text }, (err, resp) => {
-    if (err) return res.status(500).json({ error: 'grpc_error', details: err.message });
-    res.json(resp);
-  });
 });
 
 // Query knowledge base via Python assistant, fallback to gRPC
 app.post('/api/query', async (req, res) => {
-  if (pythonEnabled) {
-    try {
-      const payload = req.body || {};
-      const body = {
-        query: payload.query || '',
-        top_k: Number(payload.k ?? payload.top_k ?? 5) || 5,
-      };
-      const response = await callPython('/v1/query', { method: 'POST', body });
-      return res.json(response);
-    } catch (err) {
-      console.warn('[query] Python assistant error:', err?.message || err);
-      if (!grpcEnabled || !grpcServices) {
-        const status = err?.status || 500;
-        return res.status(status).json({ error: 'query_failed', details: err?.payload || err?.message || 'unknown_error' });
-      }
-    }
+  try {
+    const payload = req.body || {};
+    const body = {
+      query: payload.query || '',
+      top_k: Number(payload.k ?? payload.top_k ?? 5) || 5,
+    };
+    const response = await callPython('/v1/query', { method: 'POST', body });
+    return res.json(response);
+  } catch (err) {
+    const status = err?.status || 500;
+    return res.status(status).json({ error: 'query_failed', details: err?.payload || err?.message || 'unknown_error' });
   }
-  if (!grpcEnabled || !grpcServices) {
-    return res.status(503).json({ error: 'assistant_unavailable', hint: 'Start python assistant or enable gRPC.' });
-  }
-  const client = new grpcServices.Indexer(ASSISTANT_GRPC_ADDR, grpc.credentials.createInsecure());
-  const { query = '', k = 5 } = req.body || {};
-  client.Query({ query, k }, (err, resp) => {
-    if (err) return res.status(500).json({ error: 'grpc_error', details: err.message });
-    res.json(resp);
-  });
 });
 
 // Embedding helper via Python assistant, fallback to gRPC implementation
 app.post('/api/embed', async (req, res) => {
-  if (pythonEnabled) {
-    try {
-      const payload = req.body || {};
-      const texts = Array.isArray(payload.texts)
-        ? payload.texts
-        : payload.text
-        ? [payload.text]
-        : [];
-      const response = await callPython('/v1/embed', { method: 'POST', body: { texts } });
-      return res.json(response);
-    } catch (err) {
-      console.warn('[embed] Python assistant error:', err?.message || err);
-      if (!grpcEnabled || !grpcServices) {
-        const status = err?.status || 500;
-        return res.status(status).json({ error: 'embed_failed', details: err?.payload || err?.message || 'unknown_error' });
-      }
-    }
+  try {
+    const payload = req.body || {};
+    const texts = Array.isArray(payload.texts)
+      ? payload.texts
+      : payload.text
+      ? [payload.text]
+      : [];
+    const response = await callPython('/v1/embed', { method: 'POST', body: { texts } });
+    return res.json(response);
+  } catch (err) {
+    const status = err?.status || 500;
+    return res.status(status).json({ error: 'embed_failed', details: err?.payload || err?.message || 'unknown_error' });
   }
-  if (!grpcEnabled || !grpcServices) {
-    return res.status(503).json({ error: 'assistant_unavailable', hint: 'Start python assistant or enable gRPC.' });
-  }
-  const client = new grpcServices.Embeddings(ASSISTANT_GRPC_ADDR, grpc.credentials.createInsecure());
-  const { text = '' } = req.body || {};
-  client.Embed({ text }, (err, resp) => {
-    if (err) return res.status(500).json({ error: 'grpc_error', details: err.message });
-    res.json(resp);
-  });
 });
 
 // Fallback 404 page for unknown routes

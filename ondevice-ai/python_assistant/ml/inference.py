@@ -45,6 +45,7 @@ class ModelManager:
         self.kwargs = kwargs
         self._mlx_bundle: Optional[Any] = None
         self._st_model: Optional[SentenceTransformer] = None  # type: ignore
+        self._dummy: bool = False
 
     async def ensure_loaded(self) -> None:
         if self._mlx_bundle or self._st_model:
@@ -64,9 +65,10 @@ class ModelManager:
             logger.info("Falling back to SentenceTransformer (%s)", self.model_id)
             self._st_model = SentenceTransformer(self.model_id)  # type: ignore[call-arg]
         else:
-            raise RuntimeError(
-                "No inference backend available. Install mlx-lm on macOS or sentence-transformers as fallback."
+            logger.warning(
+                "No inference backend available. Enabling dummy inference fallback (dev mode)."
             )
+            self._dummy = True
 
     async def embed(self, texts: Iterable[str]) -> List[List[float]]:
         await self.ensure_loaded()
@@ -76,6 +78,18 @@ class ModelManager:
     def _embed_sync(self, texts: List[str]) -> List[List[float]]:
         if not texts:
             return []
+        if self._dummy:
+            # Simple deterministic embedding: 64-dim bucketed char codes
+            dim = 64
+            out: List[List[float]] = []
+            for t in texts:
+                vec = [0.0] * dim
+                for i, ch in enumerate(t):
+                    vec[i % dim] += (ord(ch) % 31) / 31.0
+                # L2 normalize
+                norm = sum(v * v for v in vec) ** 0.5 or 1.0
+                out.append([v / norm for v in vec])
+            return out
         if self._mlx_bundle:
             model, tokenizer = self._mlx_bundle
             vectors: List[List[float]] = []
@@ -101,6 +115,13 @@ class ModelManager:
     def _generate_sync(self, prompt: str, params: Dict[str, Any]) -> str:
         max_tokens = params.get("max_tokens", 512)
         temperature = params.get("temperature", 0.7)
+        if self._dummy:
+            # Minimal echo with guidance for dev mode
+            return (
+                "[dev-fallback] Answering without a local model. "
+                "Install mlx-lm (macOS) or sentence-transformers for real outputs.\n\n" 
+                f"Prompt: {prompt[:400]}"
+            )
         if self._mlx_bundle:
             model, tokenizer = self._mlx_bundle
             generate_func = getattr(model, "generate", None)
