@@ -1,5 +1,6 @@
 // Minimal markdown using marked (loaded via CDN)
 const md = window.marked ?? { parse: (t) => t };
+const API_BASE = window.MAHI_API_BASE ?? '';
 
 const el = (sel) => document.querySelector(sel);
 const messagesEl = el('#messages');
@@ -19,13 +20,248 @@ const tempInput = el('#temp');
 const tempVal = el('#temp-val');
 const filesInput = el('#files');
 const fileList = el('#file-list');
+const workspaceTabs = document.querySelectorAll('.workspace-tab');
+const workspacePanels = document.querySelectorAll('.workspace-panel');
+const workspaceHint = el('#workspace-hint');
+const documentsLimitInput = el('#documents-limit');
+const documentsRefreshBtn = el('#documents-refresh');
+const documentsList = el('#documents-list');
+const documentsStatus = el('#documents-status');
 // Automation selectors
 const autoForm = el('#auto-form');
 const autoGoal = el('#auto-goal');
 const autoResult = el('#auto-result');
+const autoRunBtn = el('#auto-run');
+const autoHint = el('#auto-hint');
+// DevTools selectors
+const indexForm = el('#index-form');
+const indexIdInput = el('#index-id');
+const indexTextInput = el('#index-text');
+const indexResult = el('#index-result');
+const indexFillBtn = el('#index-fill');
+const queryForm = el('#query-form');
+const queryTextInput = el('#query-text');
+const queryKInput = el('#query-k');
+const queryResult = el('#query-result');
+const streamForm = el('#stream-form');
+const streamPayloadInput = el('#stream-payload');
+const streamLog = el('#stream-log');
+const streamStatus = el('#stream-status');
+const streamStopBtn = el('#stream-stop');
+const devtoolsHint = el('#devtools-hint');
 
+const WORKSPACE_STORAGE_KEY = 'mahi_workspace_view_v1';
 const history = [];
 let currentMessages = [];
+let latestAutomationPlan = null;
+let streamAbortController = null;
+let docsLoaded = false;
+
+const SAMPLE_INDEX_TEXT = `Welcome to MahiLLM!\n\nThis document is indexed locally so the assistant can answer onboarding questions:\n- Mission: Deliver private, on-device AI workflows.\n- Pillars: Privacy, Speed, Delight.\n- Contacts: Sarah (Product), Dev (Engineering), Lila (Design).`;
+
+function buildEndpoint(path, query) {
+  const base = API_BASE || '';
+  const baseAbsolute = base && /^https?:/.test(base)
+    ? base
+    : `${window.location.origin}${base.startsWith('/') ? base : base ? `/${base}` : ''}`;
+  const normalizedBase = baseAbsolute.endsWith('/') ? baseAbsolute : `${baseAbsolute}/`;
+  const url = new URL(path.replace(/^\//, ''), normalizedBase);
+  if (query && typeof query === 'object') {
+    for (const [key, value] of Object.entries(query)) {
+      if (value === undefined || value === null || Number.isNaN(value)) continue;
+      url.searchParams.set(key, value);
+    }
+  }
+  return url.toString();
+}
+
+async function jsonRequest(path, { method = 'POST', body, headers, query, signal } = {}) {
+  const endpoint = buildEndpoint(path, query);
+  const opts = {
+    method,
+    headers: {
+      Accept: 'application/json',
+      ...(headers || {}),
+    },
+    signal,
+  };
+  if (body && method !== 'GET') {
+    opts.headers['Content-Type'] = 'application/json';
+    opts.body = JSON.stringify(body);
+  }
+  const res = await fetch(endpoint, opts);
+  const text = await res.text();
+  let data = null;
+  if (text) {
+    try {
+      data = JSON.parse(text);
+    } catch {
+      data = text;
+    }
+  }
+  if (!res.ok) {
+    const message =
+      (data && typeof data === 'object' && (data.error || data.details || data.message))
+        || res.statusText
+        || 'Request failed';
+    const error = new Error(message);
+    error.status = res.status;
+    error.payload = data;
+    throw error;
+  }
+  return data;
+}
+
+function formatPlanResponse(payload) {
+  if (!payload || typeof payload !== 'object') return String(payload ?? '');
+  const plan = payload.plan;
+  if (!plan || !Array.isArray(plan.steps)) {
+    return JSON.stringify(payload, null, 2);
+  }
+  const lines = [];
+  if (payload.audit_id) lines.push(`Audit ID: ${payload.audit_id}`);
+  lines.push(`Status: ${plan.status || 'draft'}`);
+  lines.push('');
+  lines.push('Steps:');
+  plan.steps.forEach((step) => {
+    const needs = step.requires_confirmation ? ' (needs approval)' : '';
+    lines.push(`• [${step.id}] ${step.action}: ${step.description}${needs}`);
+  });
+  if (Object.keys(plan.metadata || {}).length) {
+    lines.push('');
+    lines.push(`Metadata: ${JSON.stringify(plan.metadata, null, 2)}`);
+  }
+  return lines.join('\n');
+}
+
+function formatExecutionResponse(payload) {
+  if (!payload || typeof payload !== 'object') return String(payload ?? '');
+  const executions = Array.isArray(payload.executions) ? payload.executions : [];
+  if (!executions.length) return JSON.stringify(payload, null, 2);
+  const lines = ['Execution results:'];
+  executions.forEach((exec) => {
+    const summary = exec.result?.summary || exec.result?.output || '';
+    const status = exec.status?.toUpperCase?.() || exec.status;
+    const base = `• [${exec.step_id}] ${status || 'UNKNOWN'}`;
+    const detail = exec.error ? ` ❌ ${exec.error}` : summary ? ` — ${summary}` : '';
+    lines.push(base + detail);
+  });
+  return lines.join('\n');
+}
+
+function formatQueryResponse(payload) {
+  if (!payload || typeof payload !== 'object') return String(payload ?? '');
+  const matches = Array.isArray(payload.matches) ? payload.matches : [];
+  const lines = [`Answer: ${payload.answer || '(no answer)'}`, '', 'Matches:'];
+  if (!matches.length) {
+    lines.push('• No matches returned');
+  } else {
+    matches.forEach((match) => {
+      lines.push(`• (${match.score?.toFixed?.(3) ?? match.score}) ${match.document_id}: ${match.text?.slice(0, 120) ?? ''}`);
+    });
+  }
+  return lines.join('\n');
+}
+
+const viewHints = {
+  chat: 'Chat in realtime, adjust model settings, and track latency.',
+  automation: 'Generate plan drafts and approve actions before execution.',
+  knowledge: 'Review indexed documents and ensure the knowledge base is up to date.',
+  devtools: 'Exercise indexing, semantic search, and streaming integrations.',
+  default: 'Select a module to get started.',
+};
+
+function getActiveWorkspaceView() {
+  const activePanel = document.querySelector('.workspace-panel.is-active');
+  return activePanel?.dataset?.panel || null;
+}
+
+function updateWorkspaceHint(view) {
+  if (!workspaceHint) return;
+  workspaceHint.textContent = viewHints[view] || viewHints.default;
+}
+
+function toggleWorkspace(view) {
+  if (!workspaceTabs.length || !workspacePanels.length) return;
+  const available = new Set(Array.from(workspacePanels, (panel) => panel.dataset.panel));
+  const targetView = available.has(view) ? view : Array.from(available)[0];
+  if (!targetView) return;
+  if (getActiveWorkspaceView() === targetView) {
+    updateWorkspaceHint(targetView);
+    return;
+  }
+  workspaceTabs.forEach((tab) => {
+    const isActive = tab.dataset.view === targetView;
+    tab.classList.toggle('active', isActive);
+    tab.setAttribute('aria-selected', String(isActive));
+  });
+  workspacePanels.forEach((panel) => {
+    const isActive = panel.dataset.panel === targetView;
+    panel.classList.toggle('is-active', isActive);
+    panel.hidden = !isActive;
+  });
+  updateWorkspaceHint(targetView);
+  try {
+    localStorage.setItem(WORKSPACE_STORAGE_KEY, targetView);
+  } catch {}
+  if (targetView === 'knowledge' && !docsLoaded) {
+    refreshDocuments({ silent: false });
+  }
+}
+
+function renderDocuments(docs) {
+  if (!documentsList || !documentsStatus) return;
+  documentsList.innerHTML = '';
+  if (!Array.isArray(docs) || !docs.length) {
+    documentsStatus.textContent = 'No documents indexed yet.';
+    return;
+  }
+  documentsStatus.textContent = `${docs.length} document${docs.length === 1 ? '' : 's'} loaded.`;
+  const header = document.createElement('div');
+  header.className = 'documents-row documents-header';
+  header.innerHTML = '<span>ID</span><span>Score</span><span>Preview</span>';
+  documentsList.appendChild(header);
+  docs.forEach((doc) => {
+    const row = document.createElement('div');
+    row.className = 'documents-row';
+    const id = document.createElement('span');
+    id.className = 'doc-id';
+    id.textContent = doc.document_id || '(unknown)';
+    const score = document.createElement('span');
+    score.className = 'doc-score';
+    score.textContent = typeof doc.score === 'number' ? doc.score.toFixed(3) : doc.score ?? '—';
+    const preview = document.createElement('span');
+    preview.className = 'doc-preview';
+    preview.textContent = doc.text ? doc.text.slice(0, 140) : '';
+    row.append(id, score, preview);
+    documentsList.appendChild(row);
+  });
+}
+
+async function refreshDocuments({ silent = false } = {}) {
+  if (!documentsStatus) return;
+  const limit = Number(documentsLimitInput?.value || 20) || 20;
+  if (!silent) {
+    documentsStatus.textContent = 'Loading documents…';
+    if (documentsList) documentsList.innerHTML = '';
+  }
+  if (documentsRefreshBtn) documentsRefreshBtn.disabled = true;
+  try {
+    const response = await jsonRequest('/api/documents', {
+      method: 'GET',
+      query: { limit },
+    });
+    docsLoaded = true;
+    renderDocuments(Array.isArray(response) ? response : []);
+  } catch (err) {
+    docsLoaded = false;
+    const detail = err.payload?.error || err.payload?.details || err.message;
+    documentsStatus.textContent = `Failed to load documents: ${detail}`;
+  } finally {
+    if (documentsRefreshBtn) documentsRefreshBtn.disabled = false;
+  }
+}
+
 
 function scrollToBottom() {
   messagesEl.scrollTop = messagesEl.scrollHeight;
@@ -330,6 +566,35 @@ suggestionsEl?.addEventListener('click', (e) => {
   inputEl.focus();
 });
 
+if (workspaceTabs.length) {
+  workspaceTabs.forEach((tab) => {
+    tab.addEventListener('click', (e) => {
+      e.preventDefault();
+      const view = tab.dataset.view;
+      toggleWorkspace(view);
+    });
+  });
+  let initialView = null;
+  try {
+    initialView = localStorage.getItem(WORKSPACE_STORAGE_KEY);
+  } catch {}
+  const defaultView = initialView || workspaceTabs[0]?.dataset?.view || 'chat';
+  toggleWorkspace(defaultView);
+} else {
+  updateWorkspaceHint('default');
+}
+
+documentsRefreshBtn?.addEventListener('click', () => {
+  refreshDocuments({ silent: false });
+});
+
+documentsLimitInput?.addEventListener('change', () => {
+  docsLoaded = false;
+  if (getActiveWorkspaceView() === 'knowledge') {
+    refreshDocuments({ silent: false });
+  }
+});
+
 // Swap theme-aware images (banner and mark) using data-light-src / data-dark-src
 function swapThemeImages(theme) {
   const img = (id) => document.getElementById(id);
@@ -345,11 +610,70 @@ function swapThemeImages(theme) {
   apply(img('nav-logo'));
 }
 
-// Personalized automation demo
+async function executeLatestPlan() {
+  if (!latestAutomationPlan?.plan) return;
+  const approvals = {};
+  for (const step of latestAutomationPlan.plan.steps || []) {
+    if (!step.requires_confirmation) {
+      approvals[step.id] = true;
+      continue;
+    }
+    const ok = window.confirm(`Approve step ${step.id}?\n${step.description}`);
+    approvals[step.id] = ok;
+  }
+  autoResult.textContent = 'Executing plan…';
+  if (autoRunBtn) {
+    autoRunBtn.disabled = true;
+    autoRunBtn.textContent = 'Running…';
+  }
+  if (autoHint) {
+    autoHint.textContent = 'Executing approved steps…';
+  }
+  try {
+    const response = await jsonRequest('/api/task/execute', {
+      body: {
+        plan: latestAutomationPlan.plan,
+        approvals,
+      },
+    });
+    latestAutomationPlan = response;
+    autoResult.textContent = formatExecutionResponse(response);
+    if (autoHint) {
+      autoHint.textContent = 'Execution complete. Review results below or tweak the plan.';
+    }
+  } catch (err) {
+    const detail = err.payload?.error || err.payload?.details || err.message;
+    autoResult.textContent = `Execution failed: ${detail}`;
+    if (autoHint) {
+      autoHint.textContent = 'Execution failed. Check the backend logs and try again.';
+    }
+  } finally {
+    if (autoRunBtn) {
+      autoRunBtn.disabled = false;
+      autoRunBtn.textContent = 'Run again';
+      autoRunBtn.hidden = !latestAutomationPlan?.plan?.steps?.length;
+    }
+  }
+}
+
+autoRunBtn?.addEventListener('click', () => {
+  executeLatestPlan();
+});
+
+// Personalized automation demo wired into Python backend
 autoForm?.addEventListener('submit', async (e) => {
   e.preventDefault();
-  const apiBase = window.MAHI_API_BASE ?? '';
-  const goal = autoGoal?.value?.trim() || '';
+  const goal = autoGoal?.value?.trim();
+  if (!goal) {
+    autoResult.textContent = 'Describe a goal to plan first.';
+    if (autoHint) autoHint.textContent = 'Add a goal above to generate a plan.';
+    if (autoRunBtn) {
+      autoRunBtn.hidden = true;
+      autoRunBtn.disabled = true;
+    }
+    latestAutomationPlan = null;
+    return;
+  }
   const sources = {
     email: el('#src-email')?.checked || false,
     calendar: el('#src-calendar')?.checked || false,
@@ -357,14 +681,157 @@ autoForm?.addEventListener('submit', async (e) => {
     browser: el('#src-browser')?.checked || false,
   };
   autoResult.textContent = 'Planning…';
-  try {
-    const res = await fetch(`${apiBase}/api/plan`, {
-      method: 'POST', headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ goal, sources })
-    });
-    const json = await res.json();
-    autoResult.textContent = JSON.stringify(json, null, 2);
-  } catch (err) {
-    autoResult.textContent = 'Failed to plan.';
+  if (autoRunBtn) {
+    autoRunBtn.hidden = true;
+    autoRunBtn.disabled = true;
   }
+  if (autoHint) autoHint.textContent = 'Generating plan…';
+  try {
+    const response = await jsonRequest('/api/plan', {
+      body: {
+        goal,
+        sources,
+        history: currentMessages,
+      },
+    });
+    latestAutomationPlan = response;
+    autoResult.textContent = formatPlanResponse(response);
+    autoResult.scrollTop = 0;
+    const hasSteps = Boolean(response?.plan?.steps?.length);
+    if (autoRunBtn) {
+      autoRunBtn.hidden = !hasSteps;
+      autoRunBtn.disabled = !hasSteps;
+      autoRunBtn.textContent = 'Run plan';
+    }
+    if (autoHint) {
+      autoHint.textContent = hasSteps
+        ? 'Approve required steps, then run the plan.'
+        : 'Plan generated without actionable steps.';
+    }
+  } catch (err) {
+    latestAutomationPlan = null;
+    const detail = err.payload?.error || err.payload?.details || err.message || 'Failed to plan';
+    autoResult.textContent = `Failed to plan: ${detail}`;
+    if (autoHint) autoHint.textContent = 'Plan failed. Check the backend service and try again.';
+    if (autoRunBtn) {
+      autoRunBtn.hidden = true;
+      autoRunBtn.disabled = true;
+    }
+  }
+});
+
+// Devtools: index sample content into the vector store
+indexFillBtn?.addEventListener('click', () => {
+  if (indexIdInput && !indexIdInput.value) {
+    indexIdInput.value = `doc-${Date.now()}`;
+  }
+  if (indexTextInput) {
+    indexTextInput.value = SAMPLE_INDEX_TEXT;
+    indexTextInput.focus();
+  }
+});
+
+indexForm?.addEventListener('submit', async (e) => {
+  e.preventDefault();
+  if (!indexResult) return;
+  const documentId = indexIdInput?.value?.trim() || `doc-${Date.now()}`;
+  const text = indexTextInput?.value?.trim();
+  if (!text) {
+    indexResult.textContent = 'Enter some text to index.';
+    return;
+  }
+  indexResult.textContent = 'Indexing…';
+  try {
+    const response = await jsonRequest('/api/index', {
+      body: {
+        document_id: documentId,
+        text,
+        metadata: { source: 'devtools' },
+      },
+    });
+    indexResult.textContent = JSON.stringify(response, null, 2);
+  } catch (err) {
+    const detail = err.payload?.error || err.payload?.details || err.message;
+    indexResult.textContent = `Index failed: ${detail}`;
+  }
+});
+
+queryForm?.addEventListener('submit', async (e) => {
+  e.preventDefault();
+  if (!queryResult) return;
+  const query = queryTextInput?.value?.trim();
+  const topK = Number(queryKInput?.value || 5) || 5;
+  if (!query) {
+    queryResult.textContent = 'Enter a question to search.';
+    return;
+  }
+  queryResult.textContent = 'Searching…';
+  try {
+    const response = await jsonRequest('/api/query', {
+      body: { query, k: topK },
+    });
+    queryResult.textContent = formatQueryResponse(response);
+  } catch (err) {
+    const detail = err.payload?.error || err.payload?.details || err.message;
+    queryResult.textContent = `Search failed: ${detail}`;
+  }
+});
+
+// Devtools: stream inspector via gRPC (if enabled)
+streamForm?.addEventListener('submit', async (e) => {
+  e.preventDefault();
+  if (!streamLog || !streamStatus) return;
+  const payload = streamPayloadInput?.value?.trim() || 'Describe the current automation plan.';
+  if (streamAbortController) streamAbortController.abort();
+  streamAbortController = new AbortController();
+  streamLog.textContent = '';
+  streamStatus.textContent = 'Connecting…';
+  streamStopBtn.disabled = false;
+  try {
+    const endpoint = buildEndpoint('/api/assistant/stream');
+    const res = await fetch(endpoint, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ payload }),
+      signal: streamAbortController.signal,
+    });
+    if (!res.ok || !res.body) {
+      throw new Error(`HTTP ${res.status}`);
+    }
+    const reader = res.body.getReader();
+    const decoder = new TextDecoder();
+    streamStatus.textContent = 'Streaming…';
+    while (true) {
+      const { done, value } = await reader.read();
+      if (done) break;
+      const chunk = decoder.decode(value, { stream: true });
+      for (const line of chunk.split('\n')) {
+        const trimmed = line.trim();
+        if (!trimmed.startsWith('data: ')) continue;
+        const data = trimmed.slice(6);
+        if (data === '[DONE]') continue;
+        try {
+          const json = JSON.parse(data);
+          streamLog.textContent += `${JSON.stringify(json)}\n`;
+        } catch {
+          streamLog.textContent += `${data}\n`;
+        }
+      }
+    }
+    streamStatus.textContent = 'Stream complete';
+  } catch (err) {
+    if (err.name === 'AbortError') {
+      streamStatus.textContent = 'Stream cancelled';
+    } else {
+      const detail = err.payload?.error || err.payload?.details || err.message;
+      streamStatus.textContent = `Stream failed: ${detail}`;
+    }
+  } finally {
+    streamStopBtn.disabled = true;
+    streamAbortController = null;
+  }
+});
+
+streamStopBtn?.addEventListener('click', () => {
+  if (streamAbortController) streamAbortController.abort();
 });

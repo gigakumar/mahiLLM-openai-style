@@ -37,6 +37,7 @@
           <a href="#models">Models</a>
           
           <a href="#assistant">Assistant</a>
+          <a href="#devtools">DevTools</a>
           <a href="#automation">Automation</a>
           <a href="#pricing">Pricing</a>
           <a href="#safety">Safety</a>
@@ -58,6 +59,7 @@
           <a href="#models">Models</a>
           
           <a href="#assistant">Assistant</a>
+          <a href="#devtools">DevTools</a>
           <a href="#pricing">Pricing</a>
           <a href="#safety">Safety</a>
           <a href="#brand">Brand</a>
@@ -270,7 +272,7 @@
         <div class="container">
           <div class="section-head">
             <h2>Personalized automation (demo)</h2>
-            <p>Plan tasks locally from on-device sources. This mock shows orchestration logic only—no data ever leaves the browser in this demo.</p>
+            <p>Plan and execute tasks through the Node proxy, which now calls the Python automation runtime for real plans and results.</p>
           </div>
           <article class="card automation-card">
             <form id="auto-form" class="auto-form">
@@ -284,6 +286,10 @@
               </div>
               <div class="cta-group"><button class="btn primary" type="submit">Plan on device</button></div>
             </form>
+            <div class="auto-controls">
+              <button class="btn ghost small" type="button" id="auto-run" hidden disabled>Run plan</button>
+              <span class="auto-hint" id="auto-hint">Generate a plan to review steps and approvals.</span>
+            </div>
             <pre id="auto-result" class="auto-result" aria-live="polite"></pre>
           </article>
         </div>
@@ -353,65 +359,202 @@
         </div>
       </section>
 
-      <section class="section surface" id="chat">
-        <div class="container">
-          <div class="section-head">
-            <h2>Experience the console</h2>
-            <p>Try a live conversation with our flagship assistant. Streaming, markdown, and code execution—exactly how your users will see it.</p>
-          </div>
-          <div class="chat-preview">
-            <div class="chat-app">
-              <aside class="sidebar">
-                <div class="brand">MahiLLM</div>
-                <button id="new-chat" class="primary">+ New chat</button>
-                <div class="history" id="history"></div>
-                <div class="footer">Built with ❤️</div>
-              </aside>
-              <main class="chat">
-                <header class="chat-header">
-                  <div class="title">Chat</div>
-                  <div class="model-select">
-                    <label for="model-select" class="sr-only">Model</label>
-                    <select id="model-select" aria-label="Model">
-                      <option value="mahillm-instruct" selected>MahiLLM-Instruct</option>
-                      <option value="mahillm-code">MahiLLM-Code</option>
-                      <option value="mahillm-insight">MahiLLM-Insight</option>
-                    </select>
-                  </div>
-                  <div class="model-tuning">
-                    <label for="temp" class="sr-only">Temperature</label>
-                    <input id="temp" type="range" min="0" max="2" step="0.1" value="1" />
-                    <span id="temp-val" aria-live="polite">1.0</span>
-                    <button class="btn ghost small" id="btn-system" type="button">System preset</button>
-                  </div>
-                  <div class="tools">
-                    <button class="icon-btn" id="btn-clear" title="Clear chat" aria-label="Clear chat">🧹</button>
-                    <button class="icon-btn" id="btn-theme" title="Toggle theme" aria-label="Toggle theme">🌓</button>
-                  </div>
-                  <div class="status" id="status">Ready</div>
-                </header>
-                <details id="system-panel" class="system-panel">
-                  <summary>System prompt</summary>
-                  <textarea id="system-prompt" rows="4" placeholder="You are MahiLLM, a helpful AI assistant."></textarea>
-                </details>
-                <section id="messages" class="messages" aria-live="polite"></section>
-                <footer class="composer">
-                  <form id="form">
-                    <textarea id="input" rows="1" placeholder="Message MahiLLM..." autocomplete="off"></textarea>
-                    <button id="send" class="send" aria-label="Send" title="Send">➤</button>
+      <section class="section surface" id="workspace">
+        <div class="container workspace-shell">
+          <aside class="workspace-nav">
+            <h2>Control center</h2>
+            <p class="workspace-subtitle">Navigate between chat, automation, knowledge, and developer tools without leaving the page.</p>
+            <div class="workspace-nav-buttons" role="tablist">
+              <button class="workspace-tab active" type="button" data-view="chat" id="tab-chat" role="tab" aria-selected="true" aria-controls="panel-chat">Chat console</button>
+              <button class="workspace-tab" type="button" data-view="automation" id="tab-automation" role="tab" aria-selected="false" aria-controls="panel-automation">Automation</button>
+              <button class="workspace-tab" type="button" data-view="knowledge" id="tab-knowledge" role="tab" aria-selected="false" aria-controls="panel-knowledge">Knowledge base</button>
+              <button class="workspace-tab" type="button" data-view="devtools" id="tab-devtools" role="tab" aria-selected="false" aria-controls="panel-devtools">Developer tools</button>
+            </div>
+            <div class="workspace-hint" id="workspace-hint">Select a module to get started.</div>
+            <div class="workspace-footer">
+              <p>Need docs? Open the <a href="../docs.html">guides</a> for API references and tutorials.</p>
+            </div>
+          </aside>
+
+          <div class="workspace-content">
+            <div class="workspace-panel is-active" id="panel-chat" data-panel="chat" role="tabpanel" aria-labelledby="tab-chat">
+              <div class="panel-head">
+                <div>
+                  <h3>Chat console</h3>
+                  <p>Stream live responses, switch models, and monitor latency.</p>
+                </div>
+                <button id="new-chat" class="btn primary">+ New chat</button>
+              </div>
+              <div class="chat-app compact">
+                <aside class="sidebar">
+                  <div class="brand">MahiLLM</div>
+                  <div class="history" id="history"></div>
+                  <div class="footer">History saves locally.</div>
+                </aside>
+                <main class="chat">
+                  <header class="chat-header">
+                    <div class="title">Chat</div>
+                    <div class="model-select">
+                      <label for="model-select" class="sr-only">Model</label>
+                      <select id="model-select" aria-label="Model">
+                        <option value="mahillm-instruct" selected>MahiLLM-Instruct</option>
+                        <option value="mahillm-code">MahiLLM-Code</option>
+                        <option value="mahillm-insight">MahiLLM-Insight</option>
+                      </select>
+                    </div>
+                    <div class="model-tuning">
+                      <label for="temp" class="sr-only">Temperature</label>
+                      <input id="temp" type="range" min="0" max="2" step="0.1" value="1" />
+                      <span id="temp-val" aria-live="polite">1.0</span>
+                      <button class="btn ghost small" id="btn-system" type="button">System preset</button>
+                    </div>
+                    <div class="tools">
+                      <button class="icon-btn" id="btn-clear" title="Clear chat" aria-label="Clear chat">🧹</button>
+                      <button class="icon-btn" id="btn-theme" title="Toggle theme" aria-label="Toggle theme">🌓</button>
+                    </div>
+                    <div class="status" id="status">Ready</div>
+                  </header>
+                  <details id="system-panel" class="system-panel">
+                    <summary>System prompt</summary>
+                    <textarea id="system-prompt" rows="4" placeholder="You are MahiLLM, a helpful AI assistant."></textarea>
+                  </details>
+                  <section id="messages" class="messages" aria-live="polite"></section>
+                  <footer class="composer">
+                    <form id="form">
+                      <textarea id="input" rows="1" placeholder="Message MahiLLM..." autocomplete="off"></textarea>
+                      <button id="send" class="send" aria-label="Send" title="Send">➤</button>
+                    </form>
+                    <div class="attachments">
+                      <input type="file" id="files" multiple accept=".txt,.md,.csv,.json" />
+                      <div id="file-list" class="file-list" aria-live="polite"></div>
+                    </div>
+                    <div class="hint">MahiLLM may make mistakes. Consider checking important info.</div>
+                    <div class="suggestions" id="suggestions">
+                      <button class="chip" data-suggest="Summarize the latest product update into 3 bullet points.">Summarize an update</button>
+                      <button class="chip" data-suggest="Draft a polite reply to this customer complaint.">Draft a reply</button>
+                      <button class="chip" data-suggest="Generate 3 taglines for a developer tools company.">Generate taglines</button>
+                    </div>
+                  </footer>
+                </main>
+              </div>
+            </div>
+
+            <div class="workspace-panel" id="panel-automation" data-panel="automation" role="tabpanel" aria-labelledby="tab-automation">
+              <div class="panel-head">
+                <div>
+                  <h3>Automation planner</h3>
+                  <p>Draft multi-step plans, approve sensitive steps, and execute via the Python assistant.</p>
+                </div>
+              </div>
+              <form id="auto-form" class="auto-form">
+                <label for="auto-goal" class="sr-only">Goal</label>
+                <textarea id="auto-goal" rows="3" placeholder="e.g., Schedule a product sync with Sarah next week"></textarea>
+                <div class="auto-sources">
+                  <label><input type="checkbox" id="src-email" /> Email</label>
+                  <label><input type="checkbox" id="src-calendar" checked /> Calendar</label>
+                  <label><input type="checkbox" id="src-messages" /> Messages</label>
+                  <label><input type="checkbox" id="src-browser" /> Browser</label>
+                </div>
+                <div class="cta-group">
+                  <button class="btn primary" type="submit">Generate plan</button>
+                </div>
+              </form>
+              <div class="auto-controls">
+                <button class="btn ghost small" type="button" id="auto-run" hidden disabled>Run plan</button>
+                <span class="auto-hint" id="auto-hint">Describe a goal to generate a plan.</span>
+              </div>
+              <pre id="auto-result" class="auto-result" aria-live="polite"></pre>
+            </div>
+
+            <div class="workspace-panel" id="panel-knowledge" data-panel="knowledge" role="tabpanel" aria-labelledby="tab-knowledge">
+              <div class="panel-head">
+                <div>
+                  <h3>Knowledge base</h3>
+                  <p>View recently indexed documents and their scores.</p>
+                </div>
+                <div class="panel-actions">
+                  <label for="documents-limit">Limit</label>
+                  <input id="documents-limit" type="number" min="1" max="100" value="20" />
+                  <button class="btn ghost small" type="button" id="documents-refresh">Refresh</button>
+                </div>
+              </div>
+              <div id="documents-status" class="documents-status" aria-live="polite">No documents loaded yet.</div>
+              <div id="documents-list" class="documents-list" role="table" aria-label="Indexed documents"></div>
+            </div>
+
+            <div class="workspace-panel" id="panel-devtools" data-panel="devtools" role="tabpanel" aria-labelledby="tab-devtools">
+              <div class="panel-head">
+                <div>
+                  <h3>Developer tools</h3>
+                  <p>Exercise document indexing, semantic search, and streaming from one place.</p>
+                </div>
+              </div>
+              <div class="devtools-grid">
+                <article class="card devtools-card">
+                  <header class="devtools-card-head">
+                    <div>
+                      <h4>Document ingestion</h4>
+                      <p>Push raw text into the local vector index.</p>
+                    </div>
+                    <span class="badge secondary">POST /v1/index</span>
+                  </header>
+                  <form id="index-form" class="devtools-form" autocomplete="off">
+                    <label for="index-id" class="sr-only">Document ID</label>
+                    <input id="index-id" name="id" placeholder="doc-001" />
+                    <label for="index-text" class="sr-only">Document text</label>
+                    <textarea id="index-text" rows="4" placeholder="Paste text to index"></textarea>
+                    <div class="devtools-actions">
+                      <button class="btn primary" type="submit">Index document</button>
+                      <button class="btn ghost small" type="button" id="index-fill">Use sample</button>
+                    </div>
                   </form>
-                  <div class="attachments">
-                    <input type="file" id="files" multiple accept=".txt,.md,.csv,.json" />
-                    <div id="file-list" class="file-list" aria-live="polite"></div>
-                  </div>
-                  <div class="hint">MahiLLM may make mistakes. Consider checking important info.</div>
-                  <div class="suggestions" id="suggestions">
-                    <button class="chip" data-suggest="Summarize the latest product update into 3 bullet points.">Summarize an update</button>
-                    <button class="chip" data-suggest="Draft a polite reply to this customer complaint.">Draft a reply</button>
-                    <button class="chip" data-suggest="Generate 3 taglines for a developer tools company.">Generate taglines</button>
-                  </div>
-                </footer>
-              </main>
+                  <pre id="index-result" class="devtools-output" aria-live="polite"></pre>
+                </article>
+
+                <article class="card devtools-card">
+                  <header class="devtools-card-head">
+                    <div>
+                      <h4>Semantic search</h4>
+                      <p>Query the index and inspect ranked hits.</p>
+                    </div>
+                    <span class="badge">POST /v1/query</span>
+                  </header>
+                  <form id="query-form" class="devtools-form" autocomplete="off">
+                    <label for="query-text" class="sr-only">Search query</label>
+                    <textarea id="query-text" rows="3" placeholder="Find documents about onboarding"></textarea>
+                    <div class="devtools-inline">
+                      <div class="input-group">
+                        <label for="query-k">Top&nbsp;K</label>
+                        <input id="query-k" type="number" min="1" max="20" value="5" />
+                      </div>
+                      <button class="btn primary" type="submit">Run search</button>
+                    </div>
+                  </form>
+                  <pre id="query-result" class="devtools-output" aria-live="polite"></pre>
+                </article>
+
+                <article class="card devtools-card">
+                  <header class="devtools-card-head">
+                    <div>
+                      <h4>Streaming inspector</h4>
+                      <p>Open a bidirectional stream and watch tokens flow.</p>
+                    </div>
+                    <span class="badge secondary">gRPC StreamResponses</span>
+                  </header>
+                  <form id="stream-form" class="devtools-form" autocomplete="off">
+                    <label for="stream-payload" class="sr-only">Stream payload</label>
+                    <textarea id="stream-payload" rows="3" placeholder="Ask the assistant to describe the index status"></textarea>
+                    <div class="devtools-actions">
+                      <button class="btn primary" type="submit" id="stream-start">Start stream</button>
+                      <button class="btn ghost small" type="button" id="stream-stop" disabled>Stop</button>
+                    </div>
+                  </form>
+                  <div class="devtools-meta">Replays each payload through the Node → gRPC bridge. Requires the Rust runtime to be running.</div>
+                  <pre id="stream-log" class="devtools-output" aria-live="polite"></pre>
+                  <div class="devtools-status" id="stream-status" aria-live="polite"></div>
+                </article>
+              </div>
+              <p class="devtools-hint" id="devtools-hint" aria-live="polite">Run <code>python -m python_assistant.core.server</code> (or <code>uvicorn python_assistant.core.server:app</code>) so the proxy can reach <code>PYTHON_ASSISTANT_URL</code>. Optionally set <code>USE_ASSISTANT_GRPC=1</code> to enable Rust streaming fallbacks.</p>
             </div>
           </div>
         </div>

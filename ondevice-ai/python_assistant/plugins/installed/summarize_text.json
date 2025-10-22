@@ -1,0 +1,6 @@
+{
+  "name": "summarize_text",
+  "version": "0.1.0",
+  "scopes": {"files": true},
+  "entrypoint": "summarize_text.py"
+}
