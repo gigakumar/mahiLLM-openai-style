@@ -1,6 +1,0 @@
-# Rust build
-*/target/
-**/target/
-
-# Cargo artifacts
-**/Cargo.lock
