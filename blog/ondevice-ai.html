@@ -1,0 +1,72 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Launching OnDeviceAI • MahiLLM</title>
+  <meta name="description" content="Announcing OnDeviceAI, the local-first automation daemon for open-source maintainers and operators." />
+  <link rel="stylesheet" href="../public/styles.css" />
+</head>
+<body>
+  <header class="site-header">
+    <div class="nav-shell container">
+      <a href="../" class="logo">MahiLLM</a>
+      <nav class="nav-links">
+        <a href="../#announcement">Announcement</a>
+        <a href="../#platform">Platform</a>
+        <a href="../docs.html">Docs</a>
+        <a href="./">Blog</a>
+      </nav>
+    </div>
+  </header>
+  <main class="container" style="padding:60px 0 80px;">
+    <a class="inline-link" href="./">← Back to all posts</a>
+    <article class="card" style="margin-top:24px; display:grid; gap:22px;">
+      <header>
+        <img class="ondevice-hero-icon" src="../public/img/ondevice-icon.svg" alt="OnDeviceAI icon" />
+        <p class="eyebrow">Product launch</p>
+        <h1 style="font-size:clamp(32px,4vw,46px); margin-top:12px;">Announcing OnDeviceAI</h1>
+        <p style="color:var(--text-soft); max-width:60ch; margin-top:18px;">
+          OnDeviceAI is our local-first automation daemon with an embedded control panel for maintainers who live in open-source.
+          Run TinyLlama-class intelligence on your laptop, wire it into your GitHub rituals, and keep contributor workflows humming without a cloud hand-off.
+        </p>
+      </header>
+      <section>
+        <h2 style="font-size:24px; margin-bottom:12px;">Why we built it</h2>
+        <p>
+          Coordinating open-source projects still means juggling pull requests, changelogs, releases, docs updates, and community questions across half a dozen tools. We wanted a co-pilot that respects privacy, works offline, and understands the rituals of maintainers. OnDeviceAI pairs a Rust automation core with Python planners and our TinyLlama deployments to do exactly that.
+        </p>
+      </section>
+      <section style="display:grid; gap:16px;">
+        <h2 style="font-size:24px;">What OnDeviceAI can automate today</h2>
+        <ul>
+          <li>Tag, prioritize, and cluster new GitHub issues based on labels, sentiment, and maintainer load.</li>
+          <li>Draft release notes, changelog entries, and upgrade guides straight from merged pull requests.</li>
+          <li>Surface stale discussions, apply triage labels, and nudge contributors before community momentum drops.</li>
+          <li>Routinely sync docs or blog updates by generating PRs against your documentation repos.</li>
+        </ul>
+      </section>
+      <section style="display:grid; gap:16px;">
+        <h2 style="font-size:24px;">Under the hood</h2>
+        <ul>
+          <li>Rust daemon orchestrating connectors, schedulers, and a secure task queue.</li>
+          <li>TinyLlama and MahiLLM distilled models running locally via MLX or Metal acceleration.</li>
+          <li>PyWebview desktop control panel with live daemon telemetry and plan approval UX.</li>
+          <li>Signed automation recipes and encrypted vault storage to keep secrets on-device.</li>
+        </ul>
+      </section>
+      <section style="display:grid; gap:16px;">
+        <h2 style="font-size:24px;">What&apos;s next</h2>
+        <ul>
+          <li>Expanding automation modes beyond open-source into community support and docs sprints.</li>
+          <li>Adding programmable checkpoints so teams can version-control their automation recipes.</li>
+          <li>Packaging a starter marketplace of maintainer templates and integration bundles.</li>
+        </ul>
+        <p>
+          We&apos;re piloting OnDeviceAI with a handful of maintainers today. If you want in, drop us a line at <a class="inline-link" href="mailto:hello@mahillm.ai">hello@mahillm.ai</a> or spin up the daemon inside the <a class="inline-link" href="../#assistant">On-device Assistant</a> workspace.
+        </p>
+      </section>
+    </article>
+  </main>
+</body>
+</html>

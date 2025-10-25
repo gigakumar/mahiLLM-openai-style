@@ -1,0 +1,162 @@
+<!doctype html>
+<html lang="en" class="theme-dark">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>OnDeviceAI • Local-first automation daemon</title>
+    <meta name="description" content="Orchestrate open-source operations with a local-first automation daemon powered by TinyLlama." />
+    <link rel="stylesheet" href="../styles.css" />
+  </head>
+  <body>
+    <header class="site-header">
+      <div class="nav-shell container">
+        <a href="../index.html" class="logo">
+          <img class="logo-img" src="../img/mark.svg" alt="MahiLLM" />
+        </a>
+        <nav class="nav-links">
+          <a href="../index.html#announcement">Announcement</a>
+          <a href="../index.html#assistant">Assistant</a>
+          <a href="../index.html#automation">Automation</a>
+          <a href="../docs.html">Docs</a>
+          <a href="../blog/">Blog</a>
+        </nav>
+        <div class="nav-actions">
+          <a href="mailto:hello@mahillm.ai" class="btn primary">Request access</a>
+        </div>
+      </div>
+    </header>
+    <main>
+      <section class="hero" id="overview" style="padding-bottom:60px;">
+        <div class="hero-grid container">
+          <div class="hero-copy">
+            <img class="ondevice-hero-icon" src="../img/ondevice-icon.svg" alt="OnDeviceAI icon" />
+            <p class="eyebrow">Local-first automation</p>
+            <h1>Run your maintainer playbooks on-device.</h1>
+            <p class="lead">
+              OnDeviceAI pairs a Rust automation core with TinyLlama inference so you can automate the unglamorous parts of maintaining open-source projects—without shipping any data off your machine.
+            </p>
+            <div class="cta-group">
+              <a class="btn primary" href="mailto:hello@mahillm.ai">Join the maintainer pilot</a>
+              <a class="btn ghost" href="../blog/ondevice-ai.html">Read launch notes</a>
+            </div>
+            <dl class="hero-metrics" style="margin-top:32px;">
+              <div>
+                <dt>Automation recipes</dt>
+                <dd><strong>18</strong><span> shipped & counting</span></dd>
+              </div>
+              <div>
+                <dt>Latency</dt>
+                <dd><strong>&lt;350ms</strong><span> local inference</span></dd>
+              </div>
+              <div>
+                <dt>Maintainers</dt>
+                <dd><strong>Early access</strong><span> co-design cohort</span></dd>
+              </div>
+            </dl>
+          </div>
+          <div class="hero-card" style="align-self:stretch;">
+            <img class="announcement-icon" src="../img/ondevice-icon.svg" alt="OnDeviceAI icon" />
+            <h2>Control panel highlights</h2>
+            <p>Track daemon health, choose intelligence modes, and approve automation plans from a single PyWebview desktop surface.</p>
+            <ul>
+              <li>Daemon telemetry with live retry diagnostics</li>
+              <li>Plan reviews with diff previews before automation runs</li>
+              <li>gRPC, CLI, and plugin toggles in one place</li>
+            </ul>
+            <a href="../blog/ondevice-ai.html" class="inline-link">See the full walkthrough →</a>
+          </div>
+        </div>
+      </section>
+
+      <section class="section surface" id="playbooks">
+        <div class="container">
+          <div class="section-head">
+            <h2>Automations tuned for open-source teams</h2>
+            <p>Maintain velocity without trading privacy for productivity. Each recipe runs locally with optional encrypted sync to teammates.</p>
+          </div>
+          <div class="feature-grid">
+            <article class="card">
+              <h3>Issue triage</h3>
+              <p>Cluster, label, and prioritize new issues with contributor-friendly replies ready for review.</p>
+              <ul>
+                <li>Applies semantic dedupe across backlogs</li>
+                <li>Routes regressions to code owners automatically</li>
+                <li>Suggests first-timer tasks to grow the community</li>
+              </ul>
+            </article>
+            <article class="card">
+              <h3>Release prep</h3>
+              <p>Generate changelogs, release notes, and upgrade checklists from merged pull requests.</p>
+              <ul>
+                <li>Understands conventional commits & labels</li>
+                <li>Drafts blog snippets and social posts</li>
+                <li>Schedules preflight QA tasks for maintainers</li>
+              </ul>
+            </article>
+            <article class="card">
+              <h3>Docs sprint</h3>
+              <p>Automate doc refreshes with GPT-guided edits that stay within your voice and linting rules.</p>
+              <ul>
+                <li>Syncs with mkdocs, Docusaurus, and Astro projects</li>
+                <li>Pushes PRs with diff summaries and reviewer notes</li>
+                <li>Keeps a local vector index for context grounding</li>
+              </ul>
+            </article>
+          </div>
+        </div>
+      </section>
+
+      <section class="section" id="architecture">
+        <div class="container announcement-grid">
+          <div class="announcement-copy">
+            <p class="eyebrow">Under the hood</p>
+            <h2>Built for privacy, extensibility, and speed</h2>
+            <p>
+              The OnDeviceAI stack combines a low-level Rust runtime with Python planners and TinyLlama models compiled through MLX. Everything runs behind a local gRPC gateway that other apps can call.
+            </p>
+            <ul class="announcement-highlights">
+              <li>Signed automation recipes with Git-based version control.</li>
+              <li>Encrypted vault storing access tokens, SSH keys, and secrets.</li>
+              <li>Plugin loader for GitHub, GitLab, Slack, Linear, and custom webhooks.</li>
+            </ul>
+          </div>
+          <div class="announcement-panel card">
+            <img class="announcement-icon" src="../img/ondevice-icon.svg" alt="OnDeviceAI icon" />
+            <h3>Runtime snapshot</h3>
+            <dl class="announcement-meta">
+              <div>
+                <dt>Daemon</dt>
+                <dd>Rust + Tokio scheduler</dd>
+              </div>
+              <div>
+                <dt>Inference</dt>
+                <dd>TinyLlama 1.1B Q4 via MLX</dd>
+              </div>
+              <div>
+                <dt>Interfaces</dt>
+                <dd>CLI • gRPC • Local webview</dd>
+              </div>
+              <div>
+                <dt>Security</dt>
+                <dd>Device keystore secrets · Audit log per action</dd>
+              </div>
+            </dl>
+          </div>
+        </div>
+      </section>
+
+      <section class="section surface" id="cta">
+        <div class="container" style="display:grid; gap:24px; text-align:center;">
+          <h2>Ready to co-maintain with OnDeviceAI?</h2>
+          <p style="max-width:60ch; margin:0 auto; color:var(--text-soft);">
+            We&apos;re onboarding teams in waves so we can co-design the best automation recipes possible. Tell us about your project and we&apos;ll hand you the keys.
+          </p>
+          <div class="cta-group" style="justify-content:center;">
+            <a class="btn primary" href="mailto:hello@mahillm.ai?subject=OnDeviceAI%20Pilot">Request pilot access</a>
+            <a class="btn ghost" href="../#chat">Try the console</a>
+          </div>
+        </div>
+      </section>
+    </main>
+  </body>
+</html>

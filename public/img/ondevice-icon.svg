@@ -1,0 +1,13 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 256 256" role="img" aria-labelledby="title desc">
+  <title id="title">OnDeviceAI icon</title>
+  <desc id="desc">Overlapping red, yellow, green, and blue panels forming a stylised Y beam.</desc>
+  <g fill="none" fill-rule="evenodd">
+    <rect x="38" y="72" width="96" height="168" fill="#EA4335" rx="12" transform="rotate(-10 86 156)" />
+    <rect x="80" y="28" width="160" height="96" fill="#FBBC04" rx="14" transform="rotate(6 160 76)" />
+    <rect x="132" y="62" width="112" height="180" fill="#34A853" rx="14" transform="rotate(8 188 152)" />
+    <rect x="96" y="116" width="80" height="152" fill="#4285F4" rx="16" />
+    <path d="M136 132h-16v92h16v-92zm0 0h16c24 0 28 12 28 28v12h-16v-12c0-8-2-12-12-12h-16z" fill="#9BBDF7" fill-opacity="0.8" />
+    <path d="M128 40c13.255 0 24 10.745 24 24 0 5.936-2.175 11.371-5.78 15.527L136 96h-16l-10.22-16.473A23.9 23.9 0 0 1 104 64c0-13.255 10.745-24 24-24z" fill="#D8E8FF" fill-opacity="0.6" />
+    <path d="M168 48l40 32-56 80h-16z" fill="#FFFFFF" fill-opacity="0.12" />
+  </g>
+</svg>
